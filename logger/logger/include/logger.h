@@ -24,7 +24,7 @@ public:
 
 public:
 
-    virtual logger const *log(
+    virtual logger const* log(
         std::string const &message,
         logger::severity severity) const noexcept = 0;
 
