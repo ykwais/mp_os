@@ -3,6 +3,8 @@
 
 #include "logger.h"
 
+
+
 class logger_builder
 {
 
@@ -26,6 +28,8 @@ public:
     virtual logger_builder *clear() = 0;
 
     virtual logger *build() const = 0;
+
+    virtual logger_builder* set_format(const std::string& str) = 0;
 
 protected:
 

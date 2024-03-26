@@ -2,28 +2,36 @@
 #define MATH_PRACTICE_AND_OPERATING_SYSTEMS_CLIENT_LOGGER_BUILDER_H
 
 #include <logger_builder.h>
+#include <forward_list>
+#include <unordered_map>
+#include "client_logger.h"
 
 class client_logger_builder final:
     public logger_builder
 {
 
+    std::unordered_map<logger::severity, std::pair<std::forward_list<client_logger::refcount_stream> ,bool >> _current_streams;
+
+    std::string _format;
+
+
 public:
 
-    client_logger_builder();
+    client_logger_builder()  : _format("%m") {}
 
-    client_logger_builder(
-        client_logger_builder const &other);
-
-    client_logger_builder &operator=(
-        client_logger_builder const &other);
-
-    client_logger_builder(
-        client_logger_builder &&other) noexcept;
-
-    client_logger_builder &operator=(
-        client_logger_builder &&other) noexcept;
-
-    ~client_logger_builder() noexcept override;
+//    client_logger_builder(
+//        client_logger_builder const &other);
+//
+//    client_logger_builder &operator=(
+//        client_logger_builder const &other);
+//
+//    client_logger_builder(
+//        client_logger_builder &&other) noexcept;
+//
+//    client_logger_builder &operator=(
+//        client_logger_builder &&other) noexcept;
+//
+//    ~client_logger_builder() noexcept override;
 
 public:
 
@@ -39,6 +47,9 @@ public:
         std::string const &configuration_path) override;
 
     logger_builder *clear() override;
+
+
+    logger_builder* set_format(const std::string& str) override;
 
     [[nodiscard]] logger *build() const override;
 
