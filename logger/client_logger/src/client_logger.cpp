@@ -103,7 +103,7 @@ std::string client_logger::make_format(const std::string &message, logger::sever
                 case type::MESS:
                     res << message;
                     break;
-                case type::SEVER:
+                default:
                     res << severity_to_string(severity);
                     break;
             }
@@ -133,7 +133,7 @@ client_logger::refcount_stream::refcount_stream(const client_logger::refcount_st
         _stream.second = &iter->second.second;
     }
     else {
-        auto insert = _all_streams.emplace(_stream.first, std::make_pair(1, std::ofstream(_stream.first)));
+        auto insert = _all_streams.emplace(_stream.first, std::make_pair(1, std::ofstream(_stream.first)));//вот здесь мы открываем поток вывода
         if (!insert.second || !insert.first->second.second)
         {
             if(!insert.second)

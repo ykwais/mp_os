@@ -47,7 +47,7 @@ private:
 
     std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>> _out_streams;
 
-    client_logger(const std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>>& current_streams, std::string format) : _out_streams(current_streams), _format(format) {}
+    client_logger(const std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>>& current_streams, std::string format) : _out_streams(current_streams), _format(std::move(format)) {}
 
 
     enum class type
