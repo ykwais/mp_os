@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+//#include <gtest/gtest.h>
 #include <server_logger_builder.h>
 #include <server_logger.h>
 

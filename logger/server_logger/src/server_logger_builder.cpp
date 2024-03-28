@@ -90,7 +90,7 @@ logger_builder* server_logger_builder::transform_with_configuration(
     std::string const &configuration_file_path,
     std::string const &configuration_path)
 {
-    throw not_implemented("logger_builder* server_logger_builder::transform_with_configuration(std::string const &configuration_file_path, std::string const &configuration_path)", "your code should be here...");
+    throw not_implemented("logger_builder* server_logger_builder::transform_with_configuration(std::string const &configuration_file_path, std::string const &configuration_path)", "invalid");
 }
 
 logger_builder *server_logger_builder::clear()
@@ -111,4 +111,9 @@ logger_builder* server_logger_builder::set_dest(const std::string& str)
 {
     _dest = str;
     return this;
+}
+
+logger_builder* server_logger_builder::set_format(const std::string& str)
+{
+    throw not_implemented("logger_builder* server_logger_builder::set_format(const std::string& str)", "invalid");
 }

@@ -31,7 +31,7 @@ public:
 
     virtual logger_builder* set_dest(const std::string& str) = 0;
 
-    virtual logger *build() const = 0;
+    [[nodiscard]] virtual logger *build() const = 0;
 
     static logger::severity string_to_severity(
         std::string const &severity_string);

@@ -18,7 +18,7 @@ private:
 
 public:
 
-    server_logger_builder() : _dest("http://127.0.0.1:8080") {};
+    server_logger_builder() : _dest("http://127.0.0.1:8080") {}
 
 //    server_logger_builder(
 //        server_logger_builder const &other);
@@ -51,7 +51,7 @@ public:
 
     logger_builder* set_dest(const std::string& str) override;
 
-    //logger_builder* set_format(const std::string& str) override;
+    logger_builder* set_format(const std::string& str) override;
 
     [[nodiscard]] logger *build() const override;
 
