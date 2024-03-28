@@ -3,6 +3,10 @@ project(mp_os)
 
 set(CMAKE_CXX_STANDARD 23)
 
+set(VCPKG_TARGET_TRIPLET x64-windows)
+set(CMAKE_TOOLCHAIN_FILE C:/proga/vcpkg/scripts/buildsystems/vcpkg.cmake)
+include(C:/proga/vcpkg/scripts/buildsystems/vcpkg.cmake)
+
 add_subdirectory(allocator)
 # add_subdirectory(arithmetic)
 add_subdirectory(associative_container)

@@ -32,4 +32,6 @@
 *.app
 
 # cmake-build-debug directory
-cmake-build-debug/
+cmake-*
+..//.idea
+*.txt
