@@ -44,18 +44,13 @@ public:
     void deallocate(
         void *at) override;
 
-public:
-    
-    void foo()
-    {};
-
 private:
     
     inline logger *get_logger() const override;
 
 private:
     
-    inline std::string get_typename() const noexcept override;
+    inline std::string get_typename() const override;
 
 public:
 

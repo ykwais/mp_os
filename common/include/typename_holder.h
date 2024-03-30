@@ -12,7 +12,7 @@ public:
 
 protected:
 
-    virtual inline std::string get_typename() const noexcept = 0;
+    virtual inline std::string get_typename() const = 0;
 
 };
 

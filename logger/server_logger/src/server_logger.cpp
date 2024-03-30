@@ -46,7 +46,7 @@ logger const *server_logger::log(
     std::stringstream str_str;
 
     str_str << "<" << current_date_to_string() << ">" << " [" << current_time_to_string() << "] {"
-    << severity_to_string(severity) << "}" << text;
+    << severity_to_string(severity) << "} " << text;
 
     httplib::Params parametrs;
     parametrs.emplace("pid", std::to_string(getter_pid()));

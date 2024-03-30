@@ -51,6 +51,8 @@ public:
 
     logger_builder *clear() override;
 
+    logger_builder* set_dest(const std::string& str) override;
+
 
     logger_builder* set_format(const std::string& str) override;
 

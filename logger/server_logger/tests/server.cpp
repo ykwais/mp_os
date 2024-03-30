@@ -10,7 +10,6 @@ server::server(uint64_t port)
 
     CROW_ROUTE( _app, "/init")([&](const crow::request &req){
 
-        std::lock_guard lock(_mtx);
 
         std::string string_of_pid = req.url_params.get("pid");
 
@@ -26,6 +25,7 @@ server::server(uint64_t port)
 
         bool console_bool = string_of_console == "1";
 
+        std::lock_guard lock(_mtx);
 
         auto iter = _all_streams.find(pid_int);
 
@@ -61,8 +61,6 @@ server::server(uint64_t port)
 
     CROW_ROUTE( _app, "/log")([&](const crow::request &req){
 
-        std::lock_guard lock(_mtx);
-
         std::string string_of_pid = req.url_params.get("pid");
 
         std::string string_of_severity = req.url_params.get("severity");
@@ -72,6 +70,8 @@ server::server(uint64_t port)
         int pid_int = std::stoi(string_of_pid);
 
         logger::severity sever = logger_builder::string_to_severity(string_of_severity);
+
+        std::lock_guard lock(_mtx);
 
         auto iter = _all_streams.find(pid_int);
 
@@ -87,8 +87,9 @@ server::server(uint64_t port)
                 }
                 if(!iter_map->second.second.empty())
                 {
-                    std::ofstream file(iter_map->second.second);
-                    file << string_of_message << std::endl;
+                    std::ofstream file(iter_map->second.second, std::ios_base::app);
+                    if(file.is_open())
+                        file << string_of_message << std::endl;
                 }
 
             }
@@ -99,17 +100,18 @@ server::server(uint64_t port)
 
     CROW_ROUTE(_app, "/kill")([&](const crow::request &req){
 
-        std::lock_guard lock(_mtx);
 
         std::string string_of_pid = req.url_params.get("pid");
 
         int pid_int = std::stoi(string_of_pid);
+
+        std::lock_guard lock(_mtx);
 
         _all_streams.erase(pid_int);
 
         return 0;
     });
 
-    _app.port(port).multithreaded().run();
+    _app.port(port).loglevel(crow::LogLevel::Warning).multithreaded().run();
 }
 

@@ -11,6 +11,7 @@ TEST(allocatorGlobalHeapTests, test1)
     
     logger *logger_instance = logger_builder_instance
         ->add_file_stream("gh_alc_test1_logs.txt", logger::severity::debug)
+        ->add_file_stream("gh_alc_test1_logs.txt", logger::severity::error)
         ->build();
     delete logger_builder_instance;
     
@@ -31,10 +32,12 @@ TEST(allocatorGlobalHeapTests, test2)
     
     logger *logger_instance = logger_builder_instance
         ->add_file_stream("gh_alc_test2_logs.txt", logger::severity::debug)
+        ->add_file_stream("gh_alc_test2_logs.txt", logger::severity::error)
         ->build();
+
     delete logger_builder_instance;
     
-    allocator *allocator_instance = new allocator_global_heap;
+    allocator *allocator_instance = new allocator_global_heap(logger_instance);
     
     auto first_block = reinterpret_cast<char *>(allocator_instance->allocate(sizeof(char), 11));
     

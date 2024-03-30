@@ -23,7 +23,7 @@ public:
         typename ...args>
     inline static void construct(
         T *at,
-        args... constructor_arguments);
+        args&&... constructor_arguments);
     
     template<
         typename T>
@@ -46,9 +46,9 @@ template<
     typename ...args>
 inline void allocator::construct(
     T *at,
-    args... constructor_arguments)
+    args&&... constructor_arguments)
 {
-    new(at) T(constructor_arguments...);
+    new(at) T(std::forward<args>(constructor_arguments)...);
 }
 
 template<

@@ -222,3 +222,8 @@ logger_builder* client_logger_builder::set_format(const std::string &str)
     _format = str;
     return this;
 }
+
+logger_builder* client_logger_builder::set_dest(const std::string& str)
+{
+    throw not_implemented("logger *client_logger_builder::build() const", "your code should be here...");
+}
