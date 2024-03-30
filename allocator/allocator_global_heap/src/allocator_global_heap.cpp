@@ -50,43 +50,47 @@ allocator_global_heap &allocator_global_heap::operator=(
         throw;
     }
 
-    *reinterpret_cast<allocator**>(allocated_memory) = this;
+    *reinterpret_cast<size_t*>(allocated_memory) = necessary_memory;
 
-    *reinterpret_cast<size_t*>((reinterpret_cast<allocator*>(allocated_memory)+1)) = necessary_memory;
-
-    size_t* tmp = reinterpret_cast<size_t*>((reinterpret_cast<allocator*>(allocated_memory)+1));
+    *reinterpret_cast<allocator**>(static_cast<char*>(allocated_memory) + sizeof(size_t)) = this;
 
     debug_with_guard("global heap allocator finished to allocate " + std::to_string(necessary_memory) + " bytes for user and meta");
 
-    return tmp + 1;
+    return reinterpret_cast<char*>(allocated_memory) + sizeof(size_t) + sizeof(allocator*);
 
 }
 
 void allocator_global_heap::deallocate(
     void *at)
 {
-    void* removable;
 
     debug_with_guard("Global heap allocator start to dealloc");
 
-    try
-    {
-        size_t* block_of_size_t = reinterpret_cast<size_t*>(at) - 1;
-        allocator* block_of_alloc_pointer = reinterpret_cast<allocator*>(block_of_size_t) - 1;
-        if(block_of_alloc_pointer != this)
-        {
-            error_with_guard("incorrect void*");
-            //throw std::logic_error("block doesn't belong to this allocator!");
-        }
+    char* full_ptr = static_cast<char*>(at) - sizeof(allocator*) - sizeof(size_t);
 
-        removable = reinterpret_cast<void*>(block_of_alloc_pointer);
+    allocator* current_allocator = *reinterpret_cast<allocator**>(full_ptr + sizeof(size_t));
+
+    try {
+        if (current_allocator == this) {
+
+            size_t summary_memory = *reinterpret_cast<size_t *>(full_ptr);
+
+            //TODO dump
+
+            ::operator delete(full_ptr);
+
+            debug_with_guard("global heap deallocated " + std::to_string(summary_memory) + " bytes of memory");
+
+        } else {
+            //error_with_guard("incorrect void*");
+            throw std::logic_error("Incorrect");
+        }
     }
     catch(std::logic_error& ex)
     {
-        throw;
-    }
+        error_with_guard("incorrect void*");
 
-    ::delete reinterpret_cast<size_t*>(removable);
+    }
 
 }
 
