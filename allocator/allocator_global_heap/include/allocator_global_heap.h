@@ -16,6 +16,8 @@ private:
     
     logger *_logger;
 
+    static constexpr const size_t _size_meta = sizeof(size_t);
+
 public:
     
     explicit allocator_global_heap(
@@ -46,11 +48,13 @@ public:
 
 private:
     
-    inline logger *get_logger() const override;
+    inline logger* get_logger() const override;
 
 private:
     
     inline std::string get_typename() const override;
+
+    static std::string get_dump(char* at, size_t size);
 
 public:
 
