@@ -20,7 +20,7 @@ private:
     
     void *_trusted_memory;
 
-    static constexpr const size_t _size_allocator_meta = sizeof(logger*) + sizeof(allocator*) + sizeof(fit_mode)  +  sizeof(size_t) +  sizeof(std::mutex)  + sizeof(void*);
+    static constexpr const size_t _size_allocator_meta = sizeof(logger*) + sizeof(allocator*) + sizeof(allocator_with_fit_mode::fit_mode)  +  sizeof(size_t) +  sizeof(std::mutex)  + sizeof(void*);
 
     static constexpr const size_t _size_load_block_meta = sizeof(size_t) + 3 * sizeof(void*);
 
@@ -86,17 +86,17 @@ private:
 
     void* get_best_suitable(size_t need_size)  const noexcept; //на предыдущий блок
 
-    inline size_t get_size_full() const noexcept;
+    inline size_t get_size_full() const noexcept;//возвращает размер памяти для всего аллокатора
 
-    inline size_t get_size_current_load_block(void* current_block) const noexcept;
+    inline size_t get_size_current_load_block(void* current_block) const noexcept;//размер памяти текущего занятого
 
-    inline void* get_next_load_block(void* current_block) const noexcept;
+    inline void** get_next_load_block(void* current_block) const noexcept;//найти следующий загруженный
 
-    inline void* get_prev_load_block(void* current_block) const noexcept;
+    inline void** get_prev_load_block(void* current_block) const noexcept;//возвращает предыдущий загруженный
 
-    inline void* get_parrent_for_current_load_block(void* current_block) const noexcept;
+    inline void** get_parrent_for_current_load_block(void* current_block) const noexcept;//проверка на принадлежность блока данному аллокатору
 
-    inline void** get_first_block() const noexcept;
+    inline void** get_first_block() const noexcept;//указатель на первый блок занятый
 
     inline size_t get_next_free_size(void* loaded_block) const noexcept;
 

@@ -19,6 +19,8 @@ allocator_boundary_tags::allocator_boundary_tags(
 allocator_boundary_tags &allocator_boundary_tags::operator=(
     allocator_boundary_tags &&other) noexcept
 {
+    if(this == &other)
+        return *this;
     std::swap(_trusted_memory, other._trusted_memory);
     return *this;
 }
@@ -81,7 +83,7 @@ allocator_boundary_tags::allocator_boundary_tags(
 
     std::lock_guard lock(get_mutex());
 
-    size_t need_size_for_block = _size_load_block_meta + value_size * values_count;//мету уже здесь учитываем!!!
+    size_t need_size_for_block = _size_load_block_meta + value_size * values_count;
 
     void* previous_loaded_block;
 
@@ -106,7 +108,7 @@ allocator_boundary_tags::allocator_boundary_tags(
 
     size_t size_free_block = get_next_free_size(previous_loaded_block);
 
-    if( size_free_block > need_size_for_block) //это на случай, если самый подходящий блок памяти оказался больше
+    if( size_free_block < need_size_for_block + _size_load_block_meta ) //это на случай, если самый подходящий блок памяти оказался больше
     {
         warning_with_guard("Allocator with boundary tags changed allocating block size to " + std::to_string(size_free_block));
         need_size_for_block = size_free_block;
@@ -133,7 +135,7 @@ allocator_boundary_tags::allocator_boundary_tags(
 
     auto front_ptr = reinterpret_cast<void**>(back_ptr + 1);
 
-    *front_ptr = previous_loaded_block == _trusted_memory ? *get_first_block() : get_next_load_block(previous_loaded_block);
+    *front_ptr = previous_loaded_block == _trusted_memory ? *get_first_block() : *get_next_load_block(previous_loaded_block);
 
     auto parent_ptr = reinterpret_cast<void**>(front_ptr + 1);
 
@@ -147,7 +149,7 @@ allocator_boundary_tags::allocator_boundary_tags(
     }
     else
     {
-        next_block = get_next_load_block(previous_loaded_block);
+        next_block = *get_next_load_block(previous_loaded_block);
     }
 
     if(next_block != nullptr)
@@ -179,16 +181,19 @@ void allocator_boundary_tags::deallocate(
 
     void* block_start = reinterpret_cast<std::byte*>(at) - _size_load_block_meta;
 
-    void* parent_ptr = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t) + 2*sizeof(void*);
+    //void* parent_ptr = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t) + 2*sizeof(void*);
 
-    if(parent_ptr != _trusted_memory)
+    if(*get_parrent_for_current_load_block(block_start) != _trusted_memory)//для дебага перенеси выше, чтоб глянуть
     {
         error_with_guard("invalid deallocating obj");
         throw std::logic_error("invalid deallocating obj");
     }
 
-    void* previous = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t);
-    void* next = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t) + sizeof(void*);
+    //void* previous = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t);
+    void* previous = *get_prev_load_block(block_start);
+
+    //void* next = reinterpret_cast<std::byte*>(block_start) + sizeof(size_t) + sizeof(void*);
+    void* next = *get_next_load_block(block_start);
 
     if(previous == _trusted_memory)
     {
@@ -204,7 +209,7 @@ void allocator_boundary_tags::deallocate(
     if(next != nullptr)
     {
         auto byte_ptr = reinterpret_cast<std::byte*>(next);
-        byte_ptr += sizeof(size_t) + sizeof(void*);
+        byte_ptr += sizeof(size_t);
         *reinterpret_cast<void**>(byte_ptr) = previous;
     }
 
@@ -216,6 +221,8 @@ void allocator_boundary_tags::deallocate(
 inline void allocator_boundary_tags::set_fit_mode(
     allocator_with_fit_mode::fit_mode mode)
 {
+    const char* enums[] = {"first", "best","worst"};
+    std::cout <<  enums[static_cast<int>(mode)] << std::endl;
     auto byte_ptr = reinterpret_cast<std::byte*>(_trusted_memory);
     byte_ptr += sizeof(logger*) + sizeof(allocator*);
     *reinterpret_cast<allocator_with_fit_mode::fit_mode*>(byte_ptr) = mode;
@@ -235,7 +242,7 @@ std::vector<allocator_test_utils::block_info> allocator_boundary_tags::get_block
 
 inline logger *allocator_boundary_tags::get_logger() const
 {
-    return reinterpret_cast<logger*>(_trusted_memory);
+    return *reinterpret_cast<logger**>(_trusted_memory);
 }
 
 inline std::string allocator_boundary_tags::get_typename() const noexcept
@@ -259,7 +266,69 @@ inline allocator_with_fit_mode::fit_mode& allocator_boundary_tags::get_fit_mode(
 
 void* allocator_boundary_tags::get_first_suitable(size_t need_size)  const noexcept //на предыдущий блок
 {
-    auto first_block = *get_first_block();
+    void* first_block = *get_first_block();
+
+    if(first_block == nullptr)
+    {
+        void* end = reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full() + _size_allocator_meta;
+        void* start = reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta;
+
+        size_t available_size = reinterpret_cast<std::byte*>(end) - reinterpret_cast<std::byte*>(start);
+        if(available_size < need_size)
+        {
+            return nullptr;
+        }
+        return _trusted_memory;
+    }
+
+    void* current = *get_first_block();
+    void* previous = *get_prev_load_block(current);
+    void* next = *get_next_load_block(current);
+    size_t first_available_block_size = 0;
+
+    while(current != nullptr)
+    {
+        if(previous == _trusted_memory)
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current)  - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta);
+            if(first_available_block_size >= need_size)
+            {
+                return _trusted_memory;
+            }
+        }
+        else
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current) - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(previous) +
+                    get_size_current_load_block(previous) + _size_load_block_meta);
+            if(first_available_block_size >= need_size)
+            {
+                return previous;
+            }
+        }
+
+        previous = current;
+        current = next;
+        if(get_next_load_block(current) == nullptr)
+            break;
+        next = *get_next_load_block(current);
+    }
+
+    first_available_block_size = (reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full() + _size_allocator_meta) - (reinterpret_cast<std::byte*>(previous) +
+            get_size_current_load_block(previous) + _size_load_block_meta);
+
+    if(first_available_block_size >= need_size)
+    {
+        return previous;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+void* allocator_boundary_tags::get_worst_suitable(size_t need_size) const noexcept //на предыдущий блок
+{
+    void* first_block = *get_first_block();
 
     if(first_block == nullptr)
     {
@@ -274,17 +343,123 @@ void* allocator_boundary_tags::get_first_suitable(size_t need_size)  const noexc
         return _trusted_memory;
     }
 
+    void* current = *get_first_block();
+    void* previous = *get_prev_load_block(current);
+    void* next = *get_next_load_block(current);
+    size_t first_available_block_size = 0;
+    size_t maximum = 0;
+    void* will_return = nullptr;
 
-}
+    while(current != nullptr)
+    {
+        if(previous == _trusted_memory)
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current)  - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta);
+            if(first_available_block_size >= need_size && first_available_block_size > maximum)
+            {
+                maximum = first_available_block_size;
+                will_return =  _trusted_memory;
+            }
+        }
+        else
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current) - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(previous) +
+                                                                                                              get_size_current_load_block(previous));
+            if(first_available_block_size >= need_size && first_available_block_size > maximum)
+            {
+                maximum = first_available_block_size;
 
-void* allocator_boundary_tags::get_worst_suitable(size_t need_size) const noexcept //на предыдущий блок
-{
-    return nullptr;
+                will_return = previous;
+            }
+        }
+
+        previous = current;
+        current = next;
+        if(get_next_load_block(current) == nullptr)
+            break;
+        next = *get_next_load_block(current);
+    }
+
+
+    first_available_block_size = (reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full() + _size_allocator_meta) - (reinterpret_cast<std::byte*>(previous) +
+                                                                                                                             get_size_current_load_block(previous));
+
+    if(first_available_block_size >= need_size && first_available_block_size > maximum)
+    {
+        maximum = first_available_block_size;
+
+        will_return = previous;
+    }
+
+    return will_return;
 }
 
 void* allocator_boundary_tags::get_best_suitable(size_t need_size)  const noexcept //на предыдущий блок
 {
-    return nullptr;
+    void* first_block = *get_first_block();
+
+    if(first_block == nullptr)
+    {
+        void* end = reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full();
+        void* start = reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta;
+
+        size_t available_size = reinterpret_cast<std::byte*>(end) - reinterpret_cast<std::byte*>(start);
+        if(available_size < need_size)
+        {
+            return nullptr;
+        }
+        return _trusted_memory;
+    }
+
+    void* current = *get_first_block();
+    void* previous = *get_prev_load_block(current);
+    void* next = *get_next_load_block(current);
+    size_t first_available_block_size = 0;
+    size_t maximum = get_size_full();
+    void* will_return = nullptr;
+
+    while(current != nullptr)
+    {
+        if(previous == _trusted_memory)
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current)  - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta);
+            if(first_available_block_size >= need_size && first_available_block_size < maximum)
+            {
+                maximum = first_available_block_size;
+                will_return =  _trusted_memory;
+            }
+        }
+        else
+        {
+            first_available_block_size = reinterpret_cast<std::byte*>(current) - reinterpret_cast<std::byte*>(reinterpret_cast<std::byte*>(previous) +
+                                                                                                              get_size_current_load_block(previous));
+            if(first_available_block_size >= need_size && first_available_block_size < maximum)
+            {
+                maximum = first_available_block_size;
+
+                will_return = previous;
+            }
+        }
+
+        previous = current;
+        current = next;
+        if(get_next_load_block(current) == nullptr)
+            break;
+        next = *get_next_load_block(current);
+    }
+
+
+    first_available_block_size = (reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full() + _size_allocator_meta) - (reinterpret_cast<std::byte*>(previous) +
+                                                                                                                             get_size_current_load_block(previous));
+
+    if(first_available_block_size >= need_size && first_available_block_size < maximum)
+    {
+        maximum = first_available_block_size;
+
+        will_return = previous;
+    }
+
+    return will_return;
 }
 
 inline size_t allocator_boundary_tags::get_size_full() const noexcept
@@ -299,25 +474,31 @@ inline size_t allocator_boundary_tags::get_size_current_load_block(void* current
     return *reinterpret_cast<size_t*>(current_block);
 }
 
-inline void* allocator_boundary_tags::get_next_load_block(void* current_block) const noexcept
+inline void** allocator_boundary_tags::get_next_load_block(void* current_block) const noexcept
 {
+    if(current_block == nullptr)
+    {
+        return nullptr;
+    }
     auto byte_ptr = reinterpret_cast<std::byte*>(current_block);
     byte_ptr += sizeof(size_t) + sizeof(void*);
-    return reinterpret_cast<void*>(byte_ptr);
+    return reinterpret_cast<void**>(byte_ptr);
 }
 
-inline void* allocator_boundary_tags::get_prev_load_block(void* current_block) const noexcept
+inline void** allocator_boundary_tags::get_prev_load_block(void* current_block) const noexcept
 {
+//    if(current_block == nullptr)
+//        return _trusted_memory;//////////////////////////////////////////
     auto byte_ptr = reinterpret_cast<std::byte*>(current_block);
     byte_ptr += sizeof(size_t);
-    return reinterpret_cast<void*>(byte_ptr);
+    return reinterpret_cast<void**>(byte_ptr);
 }
 
-inline void* allocator_boundary_tags::get_parrent_for_current_load_block(void* current_block) const noexcept
+inline void** allocator_boundary_tags::get_parrent_for_current_load_block(void* current_block) const noexcept
 {
     auto byte_ptr = reinterpret_cast<std::byte*>(current_block);
     byte_ptr += sizeof(size_t) + sizeof(void*) + sizeof(void*);
-    return reinterpret_cast<void*>(byte_ptr);
+    return reinterpret_cast<void**>(byte_ptr);
 }
 
 inline void** allocator_boundary_tags::get_first_block() const noexcept
@@ -333,22 +514,27 @@ inline size_t allocator_boundary_tags::get_next_free_size(void* loaded_block) co
 
     if(loaded_block == _trusted_memory)
     {
-        next_block = get_first_block();
+        next_block = *get_first_block();
     }
     else
     {
-        next_block = get_next_load_block(loaded_block);
+        next_block = *get_next_load_block(loaded_block);
     }
 
     if(next_block == nullptr)
     {
-        void* end_adress_allocator = reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full();
-        void* end_adress_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block);
-        return static_cast<size_t>(reinterpret_cast<std::byte*>(end_adress_allocator) - reinterpret_cast<std::byte*>(end_adress_current_block));
+        void* end_address_allocator = reinterpret_cast<std::byte*>(_trusted_memory) + get_size_full() + _size_allocator_meta;
+        void* end_address_current_block;
+        if(loaded_block == _trusted_memory)
+            end_address_current_block = reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta;
+        else
+            end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + _size_load_block_meta + get_size_current_load_block(loaded_block);
+        //void* end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + _size_load_block_meta + get_size_current_load_block(loaded_block);
+        return reinterpret_cast<std::byte*>(end_address_allocator) - reinterpret_cast<std::byte*>(end_address_current_block);
     }
 
-    void* next_load_block = get_next_load_block(loaded_block);
-    void* end_adress_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block);
+    void* next_load_block = *get_next_load_block(loaded_block);
+    void* end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block) + _size_load_block_meta;
 
-    return static_cast<size_t>(reinterpret_cast<std::byte*>(next_load_block) - reinterpret_cast<std::byte*>(end_adress_current_block));
+    return reinterpret_cast<std::byte*>(next_load_block) - reinterpret_cast<std::byte*>(end_address_current_block);
 }

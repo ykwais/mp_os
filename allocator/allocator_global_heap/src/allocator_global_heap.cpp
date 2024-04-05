@@ -24,6 +24,8 @@ allocator_global_heap::allocator_global_heap(
 allocator_global_heap &allocator_global_heap::operator=(
     allocator_global_heap &&other) noexcept
 {
+    if(this == &other)
+        return *this;
     debug_with_guard("Call move assign of global heap allocator");
     _logger = other._logger;
     return *this;
