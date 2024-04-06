@@ -15,6 +15,8 @@ public:
         size_t block_size;
         
         bool is_block_occupied;
+
+        //void* _ptr;
         
         bool operator==(
             block_info const &other) const noexcept;

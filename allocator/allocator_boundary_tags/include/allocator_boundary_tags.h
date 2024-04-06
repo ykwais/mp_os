@@ -100,6 +100,10 @@ private:
 
     inline size_t get_next_free_size(void* loaded_block) const noexcept;
 
+    static std::string get_info_in_string(std::vector<allocator_test_utils::block_info>& vec) noexcept;
+
+    static std::string get_dump(char* at, size_t size);
+
 };
 
 #endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_ALLOCATOR_ALLOCATOR_BOUNDARY_TAGS_H
