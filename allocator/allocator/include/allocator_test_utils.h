@@ -32,7 +32,7 @@ public:
 
 public:
     
-    [[nodiscard]] virtual std::vector<block_info> get_blocks_info() const noexcept = 0;
+    [[nodiscard]] virtual std::vector<block_info> get_blocks_info(size_t&) const noexcept = 0;
     
 };
 

@@ -45,7 +45,7 @@ private:
 
     };
 
-    std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>> _out_streams;
+    std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>> _out_streams;//int a = 8; int b = 9;  a = b; int c = b;
 
     client_logger(const std::unordered_map<logger::severity, std::pair<std::forward_list<refcount_stream>, bool>>& current_streams, std::string format) : _out_streams(current_streams), _format(std::move(format)) {}
 
