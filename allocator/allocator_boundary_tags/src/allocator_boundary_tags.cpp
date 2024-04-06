@@ -107,7 +107,7 @@ allocator_boundary_tags::allocator_boundary_tags(
         throw std::bad_alloc();
     }
 
-    size_t size_free_block = get_next_free_size(previous_loaded_block);
+    size_t size_free_block = get_next_free_size(previous_loaded_block);////////////////////////////////
 
     if( size_free_block < need_size_for_block + _size_load_block_meta ) //это на случай, если самый подходящий блок памяти оказался больше
     {
@@ -128,7 +128,7 @@ allocator_boundary_tags::allocator_boundary_tags(
 
     auto size_new_block = reinterpret_cast<size_t*>(free_block_start);
 
-    *size_new_block = value_size * values_count;
+    *size_new_block = need_size_for_block - _size_load_block_meta;
 
     auto back_ptr = reinterpret_cast<void**>(size_new_block + 1);
 
@@ -659,8 +659,21 @@ inline size_t allocator_boundary_tags::get_next_free_size(void* loaded_block) co
         return reinterpret_cast<std::byte*>(end_address_allocator) - reinterpret_cast<std::byte*>(end_address_current_block);
     }
 
-    void* next_load_block = *get_next_load_block(loaded_block);
-    void* end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block) + _size_load_block_meta;
+    void* next_load_block;
+    void* end_address_current_block;
+
+    if(loaded_block == _trusted_memory)
+    {
+        next_load_block = *get_first_block();
+        end_address_current_block = reinterpret_cast<std::byte*>(_trusted_memory) + _size_allocator_meta;
+    }
+    else
+    {
+        next_load_block = *get_next_load_block(loaded_block);
+        end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block) + _size_load_block_meta;
+    }
+    //void* next_load_block = *get_next_load_block(loaded_block);
+    //void* end_address_current_block = reinterpret_cast<std::byte*>(loaded_block) + get_size_current_load_block(loaded_block) + _size_load_block_meta;
 
     return reinterpret_cast<std::byte*>(next_load_block) - reinterpret_cast<std::byte*>(end_address_current_block);
 }

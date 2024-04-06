@@ -88,9 +88,9 @@ TEST(positiveTests, test4)
 //            { .block_size = 1000 + sizeof(allocator::block_size_t) + sizeof(allocator::block_pointer_t) * 2, .is_block_occupied = true },
 //            { .block_size = 1000 + sizeof(allocator::block_size_t) + sizeof(allocator::block_pointer_t) * 2, .is_block_occupied = true },
 //            { .block_size = 3000 - (1000 + sizeof(allocator::block_size_t) + sizeof(allocator::block_pointer_t)) * 2, .is_block_occupied = false }
-                    { .block_size = 1000, .is_block_occupied = true },
-                    { .block_size = 0 , .is_block_occupied = true },
-                    { .block_size = 3000 - (1032 + 32), .is_block_occupied = false }
+            { .block_size = 1000, .is_block_occupied = true },
+            { .block_size = 0 , .is_block_occupied = true },
+            { .block_size = 3000 - (1032 + 32), .is_block_occupied = false }
         };
     
     ASSERT_EQ(actual_blocks_state.size(), expected_blocks_state.size());
