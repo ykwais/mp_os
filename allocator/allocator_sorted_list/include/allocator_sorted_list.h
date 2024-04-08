@@ -127,7 +127,7 @@ private:
 
         size_t size();
 
-        [[nodiscard]] void* get_ptr_free_block() const noexcept;
+        void* get_ptr_free_block() const noexcept;
 
     };
 

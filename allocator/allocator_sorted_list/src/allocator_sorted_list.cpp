@@ -97,7 +97,7 @@ allocator_sorted_list::allocator_sorted_list(
     size_t values_count)
 {
     trace_with_guard("allocate from allocator start");
-    size_t full_avai;
+    size_t full_avai = 2;
     information_with_guard("allocator before allocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
     information_with_guard("current available memory: " + std::to_string(full_avai));
 
@@ -146,57 +146,22 @@ allocator_sorted_list::allocator_sorted_list(
 
     *parent_ptr = _trusted_memory;
 
-    if(size_free_block - need_size_for_block > _meta_block)
+    if(size_free_block - need_size_for_block >= _meta_block)
     {
         auto byte_ptr = reinterpret_cast<std::byte*>(current_block) + _meta_block + get_size_block(current_block);
         *reinterpret_cast<size_t*>(byte_ptr) = size_free_block - need_size_for_block - _meta_block;
         byte_ptr += sizeof(size_t);
         *reinterpret_cast<void**>(byte_ptr) = next_block;
         next_block = reinterpret_cast<std::byte*>(current_block) + _meta_block + get_size_block(current_block);
-        //*get_ptr_previous(previous_block) = next_block;
+
     }
-//    else
-//    {
-//        if(next_block == nullptr)
-//        {
-//            void* end_allocator = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full();
-//
-//        }
-//        else
-//        {
-//            *get_ptr_previous(previous_block) = next_block;
-//        }
-//    }
+
     *get_ptr_previous(previous_block) = next_block;
 
 
-//    if(next_block == nullptr)
-//    {
-//        auto byte_ptr = reinterpret_cast<std::byte *>(current_block);//???
-//        byte_ptr += _meta_block + get_size_block(current_block);
-//        *get_ptr_previous(previous_block) = reinterpret_cast<void*>(byte_ptr);
-//        *reinterpret_cast<size_t *>(byte_ptr) =
-//                reinterpret_cast<std::byte *>(reinterpret_cast<std::byte *>(_trusted_memory) + _meta_allocator +
-//                                              get_size_full()) -
-//                reinterpret_cast<std::byte *>(byte_ptr + sizeof(size_t) + sizeof(void *));
-//        byte_ptr += sizeof(size_t);
-//        *reinterpret_cast<void **>(byte_ptr) = nullptr;
-//    }
-//    else
-//    {
-//        if(size_free_block - need_size_for_block > _meta_block)
-//        {
-//            auto byte_ptr = reinterpret_cast<std::byte*>(current_block) + _meta_block + get_size_block(current_block);
-//            *reinterpret_cast<size_t*>(byte_ptr) = size_free_block - need_size_for_block - _meta_block;
-//            byte_ptr += sizeof(size_t);
-//            *reinterpret_cast<void**>(byte_ptr) = next_block;
-//            next_block = reinterpret_cast<std::byte*>(current_block) + _meta_block + get_size_block(current_block);
-//        }
-//        *get_ptr_previous(previous_block) = next_block;
-//    }
-
-    trace_with_guard("allocator allocating " + std::to_string(need_size_for_block) + " bytes");
+    trace_with_guard("allocator allocating " + std::to_string(need_size_for_block) + " bytes, meta" + std::to_string(_meta_block));
     trace_with_guard("allocate memory finish");
+
     information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
     information_with_guard("current available memory: " + std::to_string(full_avai));
 
@@ -208,7 +173,7 @@ void allocator_sorted_list::deallocate(
     void *at)
 {
     trace_with_guard("deallocate memory start");
-    size_t full_avai;
+    size_t full_avai = 2;
     information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
     information_with_guard("current available memory: " + std::to_string(full_avai));
 
@@ -237,20 +202,22 @@ void allocator_sorted_list::deallocate(
         next_free = get_ptr_from_block(previous_free);
     }
 
-    if(next_free != nullptr)//////////////////////////////////////////отсюда проверять!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    {
-        if(reinterpret_cast<void*>(reinterpret_cast<std::byte*>(block_start) + _meta_block + get_size_block(block_start)) == next_free)
-        {
-            auto byte_ptr = reinterpret_cast<std::byte*>(block_start);
-            *reinterpret_cast<size_t*>(byte_ptr) = get_size_block(block_start) + _meta_block + get_size_block(next_free);
-            byte_ptr += sizeof(size_t);
-            *reinterpret_cast<void**>(byte_ptr) = get_ptr_from_block(next_free);
-            next_free = get_ptr_from_block(next_free);
-        }
 
+    if(next_free != nullptr && reinterpret_cast<void*>(reinterpret_cast<std::byte*>(block_start) + _meta_block + get_size_block(block_start)) == next_free)
+    {
+        auto byte_ptr = reinterpret_cast<std::byte*>(block_start);
+        *reinterpret_cast<size_t*>(byte_ptr) = get_size_block(block_start) + _meta_block + get_size_block(next_free);
+        byte_ptr += sizeof(size_t);
+        *reinterpret_cast<void**>(byte_ptr) = get_ptr_from_block(next_free);
+        //next_free = get_ptr_from_block(next_free);
     }
+    else
+    {
+        *get_ptr_previous(block_start) = next_free;
+    }
+
     *get_ptr_previous(previous_free) = block_start;
-    *get_ptr_previous(block_start) = next_free;
+
 
     if(previous_free != _trusted_memory && reinterpret_cast<std::byte*>(previous_free) + _meta_block + get_size_block(previous_free) == block_start )
     {
@@ -259,9 +226,6 @@ void allocator_sorted_list::deallocate(
         *reinterpret_cast<void**>(byte_ptr) = get_ptr_from_block(block_start);
     }
 
-
-    size_t tmp;
-    information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(tmp)));
 
     trace_with_guard("deallocate memory finish");
 
@@ -304,70 +268,60 @@ std::string allocator_sorted_list::get_info_in_string(const std::vector<allocato
     return str.str();
 }
 
+
 std::vector<allocator_test_utils::block_info> allocator_sorted_list::get_blocks_info(size_t& full_size_avail) const noexcept
 {
     full_size_avail = 0;
-
     std::vector<allocator_test_utils::block_info> result;
+    auto it = begin_for_free_iter();
+    auto end = end_for_free_iter();
+
     void* prev = _trusted_memory;
 
-    if(begin_for_free_iter() == end_for_free_iter())
+    if(it == end)
     {
         auto byte_ptr = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator;
-        auto byte_end = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full();
-        while(reinterpret_cast<void*>(byte_ptr) != byte_end)
+        auto end_all = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full();
+
+        while(byte_ptr != end_all)
         {
-            size_t occup_size = get_size_block(byte_ptr);
-            result.push_back({occup_size, true});
-            byte_ptr += _meta_block + occup_size;
+            result.push_back({get_size_block(byte_ptr), true});
+            byte_ptr += _meta_block + get_size_block(byte_ptr);
         }
+
     }
 
-    for(auto it = begin_for_free_iter(), end = end_for_free_iter(); it != end; ++it)
+    for(;it != end; ++it)
     {
+        size_t current_meta = prev == _trusted_memory ? _meta_allocator : _meta_block + get_size_block(prev);
 
-        size_t meta = prev == _trusted_memory ? _meta_allocator : _meta_block + get_size_block(prev);
+        auto byte_ptr = reinterpret_cast<std::byte*>(prev) + current_meta;
 
-//        if(it.get_ptr_free_block() != reinterpret_cast<void*>(reinterpret_cast<std::byte*>(prev) + meta))
-//        {
-        auto byte_ptr = reinterpret_cast<std::byte*>(prev) + meta;
-
-        while(reinterpret_cast<void*>(byte_ptr) != it.get_ptr_free_block())
+        while(byte_ptr != it.get_ptr_free_block())
         {
-            size_t occup_size = get_size_block(byte_ptr);
-            result.push_back({occup_size, true});
-            byte_ptr += _meta_block + occup_size;
+            result.push_back({get_size_block(byte_ptr), true});
+            byte_ptr += _meta_block + get_size_block(byte_ptr);
         }
-        //}
 
         full_size_avail += it.size();
         result.push_back({it.size(), false});
 
-        prev = it.get_ptr_free_block();
-
-        if(*reinterpret_cast<void**>(reinterpret_cast<std::byte*>(it.get_ptr_free_block()) + sizeof(size_t)) == nullptr)
+        auto check_end = *reinterpret_cast<void**>(reinterpret_cast<std::byte*>(it.get_ptr_free_block()) + sizeof(size_t));
+        if(check_end == nullptr)
         {
-            //full_size_avail += get_size_block(it.get_ptr_free_block());
-            //result.push_back({get_size_block(it.get_ptr_free_block()), false});
-            if(reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full() != reinterpret_cast<std::byte*>(it.get_ptr_free_block()) + _meta_block +
-                                                                                                    it.size())
+            auto byte_ptr2 = reinterpret_cast<std::byte*>(it.get_ptr_free_block()) + _meta_block + it.size();
+            auto end_allocator = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full();
+
+            while(byte_ptr2 != end_allocator)
             {
-                auto byte_ptr2 = reinterpret_cast<std::byte*>(it.get_ptr_free_block()) + _meta_block + it.size();
-                auto byte_end = reinterpret_cast<std::byte*>(_trusted_memory) + _meta_allocator + get_size_full();
-                while(reinterpret_cast<void*>(byte_ptr2) != byte_end)
-                {
-                    size_t occup_size = get_size_block(byte_ptr2);
-                    result.push_back({occup_size, true});
-                    byte_ptr2 += _meta_block + occup_size;
-                }
+                result.push_back({get_size_block(byte_ptr2), true});
+                byte_ptr2 += _meta_block + get_size_block(byte_ptr2);
             }
         }
 
+        prev = it.get_ptr_free_block();
     }
-
-
     return result;
-
 }
 
 inline logger *allocator_sorted_list::get_logger() const
@@ -510,10 +464,7 @@ inline void* allocator_sorted_list::get_previous_for_loaded(void* loaded_ptr) co
     return prev;
 }
 
-//inline void* allocator_sorted_list::get_next_free_block(void* current_block) noexcept
-//{
-//    return get_ptr_from_block(current_block);
-//}
+
 
 inline size_t allocator_sorted_list::get_size_block(void* current_block) noexcept
 {

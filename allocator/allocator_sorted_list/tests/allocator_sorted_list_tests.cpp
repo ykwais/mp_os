@@ -139,7 +139,7 @@ TEST(allocatorSortedListPositiveTests, test3)
                                                     });
     allocator *allocator = new allocator_sorted_list(5000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
-    int iterations_count = 50;
+    int iterations_count = 100;
     
     std::list<void *> allocated_blocks;
     srand((unsigned)time(nullptr));
@@ -149,7 +149,6 @@ TEST(allocatorSortedListPositiveTests, test3)
         switch (rand() % 2)
         {
             case 0:
-            case 1:
                 try
                 {
                     allocated_blocks.push_front(allocator->allocate(sizeof(char), rand() % 251 + 50));
@@ -160,7 +159,7 @@ TEST(allocatorSortedListPositiveTests, test3)
                     std::cout << ex.what() << std::endl;
                 }
                 break;
-            case 2:
+            case 1:
                 if (allocated_blocks.empty())
                 {
                     std::cout << "No blocks to deallocate" << std::endl;
@@ -252,6 +251,34 @@ TEST(allocatorSortedListPositiveTests, test5)
                                                                     logger::severity::critical
                                                             }
                                                     });
+
+    logger *logger_instance2 = create_logger(std::vector<std::pair<std::string, logger::severity>>
+                                                    {
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::information
+                                                            },
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::debug
+                                                            },
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::trace
+                                                            },
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::warning
+                                                            },
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::error
+                                                            },
+                                                            {
+                                                                    "cx.txt",
+                                                                    logger::severity::critical
+                                                            }
+                                                    });
     allocator *alloc = new allocator_sorted_list(4000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
     auto first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 250));
@@ -261,7 +288,7 @@ TEST(allocatorSortedListPositiveTests, test5)
     first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 245));
     
     //TODO: logger
-    allocator *allocator = new allocator_sorted_list(5000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
+    allocator *allocator = new allocator_sorted_list(5000, nullptr, logger_instance2, allocator_with_fit_mode::fit_mode::first_fit);
     auto *the_same_subject = dynamic_cast<allocator_with_fit_mode *>(alloc);
     int iterations_count = 1000;
     
@@ -272,11 +299,11 @@ TEST(allocatorSortedListPositiveTests, test5)
     {
         switch (rand() % 2)
         {
+
             case 0:
-            case 1:
                 try
                 {
-                    switch (rand() % 2)
+                    switch (rand() % 3)
                     {
                         case 0:
                             the_same_subject->set_fit_mode(allocator_with_fit_mode::fit_mode::first_fit);
@@ -294,7 +321,7 @@ TEST(allocatorSortedListPositiveTests, test5)
                     std::cout << ex.what() << std::endl;
                 }
                 break;
-            case 2:
+            case 1:
                 if (allocated_blocks.empty())
                 {
                     std::cout << "No blocks to deallocate" << std::endl;
