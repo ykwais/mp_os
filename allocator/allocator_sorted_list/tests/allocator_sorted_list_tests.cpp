@@ -32,35 +32,35 @@ logger *create_logger(
 
 TEST(allocatorSortedListPositiveTests, test1)
 {
-//    logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
-//                                                    {
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::information
-//                                                            },
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::debug
-//                                                            },
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::trace
-//                                                            },
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::warning
-//                                                            },
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::error
-//                                                            },
-//                                                            {
-//                                                                    "a.txt",
-//                                                                    logger::severity::critical
-//                                                            }
-//                                                    });
+    logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
+                                                    {
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::information
+                                                            },
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::debug
+                                                            },
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::trace
+                                                            },
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::warning
+                                                            },
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::error
+                                                            },
+                                                            {
+                                                                    "a.txt",
+                                                                    logger::severity::critical
+                                                            }
+                                                    });
     
-    allocator *alloc = new allocator_sorted_list(3000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
+    allocator *alloc = new allocator_sorted_list(3000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
     auto first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 250));
     
@@ -68,9 +68,15 @@ TEST(allocatorSortedListPositiveTests, test1)
     alloc->deallocate(first_block);
     
     first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 245));
+
+    auto *the_same_subject = dynamic_cast<allocator_with_fit_mode *>(alloc);
+    the_same_subject->set_fit_mode(allocator_with_fit_mode::fit_mode::the_best_fit);
+
+    auto third_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 1));
     
     alloc->deallocate(second_block);
     alloc->deallocate(first_block);
+    alloc->deallocate(third_block);
     
     //TODO: Проверка
     
