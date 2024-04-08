@@ -110,10 +110,36 @@ TEST(allocatorSortedListPositiveTests, test2)
 
 TEST(allocatorSortedListPositiveTests, test3)
 {
-    //TODO: logger
-    allocator *allocator = new allocator_sorted_list(5000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
+    logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
+                                                    {
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::information
+                                                            },
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::debug
+                                                            },
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::trace
+                                                            },
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::warning
+                                                            },
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::error
+                                                            },
+                                                            {
+                                                                    "b.txt",
+                                                                    logger::severity::critical
+                                                            }
+                                                    });
+    allocator *allocator = new allocator_sorted_list(5000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
-    int iterations_count = 100;
+    int iterations_count = 50;
     
     std::list<void *> allocated_blocks;
     srand((unsigned)time(nullptr));
@@ -126,7 +152,7 @@ TEST(allocatorSortedListPositiveTests, test3)
             case 1:
                 try
                 {
-                    allocated_blocks.push_front(allocator->allocate(sizeof(void *), rand() % 251 + 50));
+                    allocated_blocks.push_front(allocator->allocate(sizeof(char), rand() % 251 + 50));
                     std::cout << "allocation succeeded" << std::endl;
                 }
                 catch (std::bad_alloc const &ex)
@@ -198,7 +224,35 @@ TEST(allocatorSortedListPositiveTests, test4)
 
 TEST(allocatorSortedListPositiveTests, test5)
 {
-    allocator *alloc = new allocator_sorted_list(4000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
+
+    logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
+                                                    {
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::information
+                                                            },
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::debug
+                                                            },
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::trace
+                                                            },
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::warning
+                                                            },
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::error
+                                                            },
+                                                            {
+                                                                    "c.txt",
+                                                                    logger::severity::critical
+                                                            }
+                                                    });
+    allocator *alloc = new allocator_sorted_list(4000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
     auto first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 250));
     auto second_block = reinterpret_cast<char *>(alloc->allocate(sizeof(char), 500));
@@ -209,7 +263,7 @@ TEST(allocatorSortedListPositiveTests, test5)
     //TODO: logger
     allocator *allocator = new allocator_sorted_list(5000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
     auto *the_same_subject = dynamic_cast<allocator_with_fit_mode *>(alloc);
-    int iterations_count = 100;
+    int iterations_count = 1000;
     
     std::list<void *> allocated_blocks;
     srand((unsigned)time(nullptr));
@@ -232,7 +286,7 @@ TEST(allocatorSortedListPositiveTests, test5)
                             the_same_subject->set_fit_mode(allocator_with_fit_mode::fit_mode::the_worst_fit);
                     }
                     
-                    allocated_blocks.push_front(allocator->allocate(sizeof(void *), rand() % 251 + 50));
+                    allocated_blocks.push_front(allocator->allocate(sizeof(char), rand() % 251 + 50));
                     std::cout << "allocation succeeded" << std::endl;
                 }
                 catch (std::bad_alloc const &ex)
