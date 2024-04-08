@@ -32,7 +32,33 @@ logger *create_logger(
 
 TEST(allocatorSortedListPositiveTests, test1)
 {
-    //TODO: logger
+//    logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
+//                                                    {
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::information
+//                                                            },
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::debug
+//                                                            },
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::trace
+//                                                            },
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::warning
+//                                                            },
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::error
+//                                                            },
+//                                                            {
+//                                                                    "a.txt",
+//                                                                    logger::severity::critical
+//                                                            }
+//                                                    });
     
     allocator *alloc = new allocator_sorted_list(3000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
     
@@ -144,14 +170,14 @@ TEST(allocatorSortedListPositiveTests, test4)
     
     auto first_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char), 250));
     auto second_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(char), 150));
-    auto third_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char *), 300));
+    auto third_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char), 300));
     
     auto *the_same_subject = dynamic_cast<allocator_with_fit_mode *>(alloc);
     the_same_subject->set_fit_mode(allocator_with_fit_mode::fit_mode::the_worst_fit);
-    auto four_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char *), 50));
+    auto four_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char), 50));
     
     the_same_subject->set_fit_mode(allocator_with_fit_mode::fit_mode::the_best_fit);
-    auto five_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char *), 50));
+    auto five_block = reinterpret_cast<unsigned char *>(alloc->allocate(sizeof(unsigned char), 50));
     
     alloc->deallocate(first_block);
     alloc->deallocate(second_block);
@@ -166,7 +192,7 @@ TEST(allocatorSortedListPositiveTests, test4)
 
 TEST(allocatorSortedListPositiveTests, test5)
 {
-    allocator *alloc = new allocator_sorted_list(3000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
+    allocator *alloc = new allocator_sorted_list(4000, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
     
     auto first_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 250));
     auto second_block = reinterpret_cast<char *>(alloc->allocate(sizeof(char), 500));

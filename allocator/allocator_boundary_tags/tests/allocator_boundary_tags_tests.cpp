@@ -270,11 +270,6 @@ TEST(own, test1)
 
     delete alloc;
 
-
-
-
-
-
 }
 
 int main(
