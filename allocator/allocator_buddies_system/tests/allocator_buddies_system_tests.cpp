@@ -30,7 +30,7 @@ logger *create_logger(
     return logger_instance;
 }
 
-TEST(positiveTests, test1)
+TEST(positiveTests, test111)
 {
     logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -40,8 +40,9 @@ TEST(positiveTests, test1)
             }
         });
     allocator *allocator_instance = new allocator_buddies_system(12, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
-    
-    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info();
+
+    size_t size_free = 0;
+    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info(size_free);
     std::vector<allocator_test_utils::block_info> expected_blocks_state
         {
             { .block_size = 4096, .is_block_occupied = false }
@@ -57,7 +58,7 @@ TEST(positiveTests, test1)
     delete logger_instance;
 }
 
-TEST(positiveTests, test2)
+TEST(positiveTests, test222)
 {
     logger *logger_instance = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -69,8 +70,9 @@ TEST(positiveTests, test2)
     allocator *allocator_instance = new allocator_buddies_system(8, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
     
     void *first_block = allocator_instance->allocate(sizeof(unsigned char), 40);
-    
-    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info();
+
+    size_t size_free = 0;
+    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info(size_free);
     std::vector<allocator_test_utils::block_info> expected_blocks_state
         {
             { .block_size = 64, .is_block_occupied = true },
@@ -90,15 +92,16 @@ TEST(positiveTests, test2)
     delete logger_instance;
 }
 
-TEST(positiveTests, test3)
+TEST(positiveTests, test333)
 {
     allocator *allocator_instance = new allocator_buddies_system(8, nullptr, nullptr, allocator_with_fit_mode::fit_mode::first_fit);
     
     void *first_block = allocator_instance->allocate(sizeof(unsigned char), 0);
     void *second_block = allocator_instance->allocate(sizeof(unsigned char), 0);
     allocator_instance->deallocate(first_block);
-    
-    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info();
+
+    size_t size_free = 0;
+    auto actual_blocks_state = dynamic_cast<allocator_test_utils *>(allocator_instance)->get_blocks_info(size_free);
     ASSERT_EQ(actual_blocks_state.size(), 3);
     ASSERT_EQ(actual_blocks_state[0].block_size, 1 << (static_cast<int>(std::floor(std::log2(sizeof(allocator::block_pointer_t) * 2 + 1))) + 1));
     ASSERT_EQ(actual_blocks_state[0].is_block_occupied, false);
