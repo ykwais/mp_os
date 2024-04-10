@@ -96,12 +96,12 @@ allocator_sorted_list::allocator_sorted_list(
     size_t value_size,
     size_t values_count)
 {
+    std::lock_guard lock(get_mutex());
+
     trace_with_guard("allocate from allocator start");
     size_t full_avai = 2;
     information_with_guard("allocator before allocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
     information_with_guard("current available memory: " + std::to_string(full_avai));
-
-    std::lock_guard lock(get_mutex());
 
     size_t need_size_for_block = value_size * values_count;
 
@@ -172,12 +172,13 @@ allocator_sorted_list::allocator_sorted_list(
 void allocator_sorted_list::deallocate(
     void *at)
 {
+    std::lock_guard lock(get_mutex());
+
     trace_with_guard("deallocate memory start");
     size_t full_avai = 2;
     information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
     information_with_guard("current available memory: " + std::to_string(full_avai));
 
-    std::lock_guard lock(get_mutex());
 
     void* block_start = reinterpret_cast<std::byte*>(at) - _meta_block;
 

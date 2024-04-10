@@ -12,21 +12,22 @@ allocator_buddies_system::~allocator_buddies_system()
 allocator_buddies_system::allocator_buddies_system(
     allocator_buddies_system &&other) noexcept
 {
-    //log
+    debug_with_guard("move copy start");
     _trusted_memory = std::exchange(other._trusted_memory, nullptr);
-    //log
+    debug_with_guard("move copy finish");
 }
 
 allocator_buddies_system &allocator_buddies_system::operator=(
     allocator_buddies_system &&other) noexcept
 {
+    debug_with_guard("assign move start");
     if(this == &other)
     {
-        //log
+        debug_with_guard("assign move finish");
         return *this;
     }
     std::swap(_trusted_memory, other._trusted_memory);
-    //log
+    debug_with_guard("assign move finish");
     return *this;
 }
 
@@ -50,7 +51,7 @@ allocator_buddies_system::allocator_buddies_system(
         }
         catch(std::bad_alloc& ex)
         {
-            //log
+            error_with_guard("bad alloc for allocator from global heap!!!");
             throw;
         }
     }
@@ -88,14 +89,22 @@ allocator_buddies_system::allocator_buddies_system(
     first_block->is_occup = false;
     first_block->size = space_size_power_of_two - _minimal_k;
 
+    debug_with_guard("constructor finish");
 }
 
 [[nodiscard]] void *allocator_buddies_system::allocate(
     size_t value_size,
     size_t values_count)
 {
-    //log
+
     std::lock_guard lock(get_mutex());
+
+    trace_with_guard("allocate from allocator start");
+    size_t full_avai;
+    information_with_guard("allocator before allocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
+    information_with_guard("current available memory: " + std::to_string(full_avai));
+
+
 
     size_t need_size = values_count * value_size + _meta_ocuupied_block;
 
@@ -116,7 +125,7 @@ allocator_buddies_system::allocator_buddies_system(
 
     if(free_block == nullptr)
     {
-        //log "Bad allocation by twin_allocator for " + std::to_string(need_size) + " bytes"
+        error_with_guard("Bad allocation by twin_allocator for " + std::to_string(need_size) + " bytes");
         throw std::bad_alloc();
     }
 
@@ -131,7 +140,9 @@ allocator_buddies_system::allocator_buddies_system(
 
     if(get_size_block(free_block) != need_size)
     {
-        //log realloc
+        warning_with_guard("Allocator with boundary tags changed allocating block size to " + std::to_string(
+                get_size_block(free_block)));
+
     }
 
     auto first_twin = reinterpret_cast<one_byte_field*>(free_block);
@@ -139,8 +150,12 @@ allocator_buddies_system::allocator_buddies_system(
 
     *reinterpret_cast<void**>(first_twin + 1) = _trusted_memory;
 
-    //log
-    //log
+    trace_with_guard("allocator allocating " + std::to_string(need_size) + " bytes ");
+    trace_with_guard("allocate memory finish");
+
+    information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
+    information_with_guard("current available memory: " + std::to_string(full_avai));
+
 
     return reinterpret_cast<std::byte*>(free_block) + _meta_ocuupied_block;
 }
@@ -148,19 +163,26 @@ allocator_buddies_system::allocator_buddies_system(
 void allocator_buddies_system::deallocate(
     void *at)
 {
+
     std::lock_guard lock(get_mutex());
+
+    trace_with_guard("deallocate memory start");
+    size_t full_avai;
+    information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
+    information_with_guard("current available memory: " + std::to_string(full_avai));
+
 
     void* current_block = reinterpret_cast<std::byte*>(at) - _meta_ocuupied_block;
 
     if(*reinterpret_cast<void**>(reinterpret_cast<std::byte*>(at) - sizeof(void*)) != _trusted_memory )
     {
-        //log
+        error_with_guard("You wanna delete a block that does not belong to this allocator");
         std::logic_error("not this allocator!");
     }
 
     size_t current_block_size = get_size_block(current_block) - _meta_ocuupied_block;
 
-    //get dump
+    debug_with_guard("condition of block before deallocate: " + get_dump(reinterpret_cast<char*>(at), current_block_size));
 
     reinterpret_cast<one_byte_field*>(current_block)->is_occup = false;
 
@@ -177,8 +199,11 @@ void allocator_buddies_system::deallocate(
         twin = get_twin(current_block);
     }
 
-    //log
-    //log
+    trace_with_guard("deallocate memory finish");
+
+    information_with_guard("allocator deallocated: current condition of blocks: " + get_info_in_string(get_blocks_info(full_avai)));
+
+    information_with_guard("current available memory: " + std::to_string(full_avai));
 
 
 }
@@ -194,10 +219,15 @@ inline void allocator_buddies_system::set_fit_mode(
 
 std::vector<allocator_test_utils::block_info> allocator_buddies_system::get_blocks_info(size_t& full_size_avail) const noexcept
 {
+    full_size_avail = 0;
     std::vector<allocator_test_utils::block_info> result;
 
     for(auto it = begin_for_iter_twin(), end = end_for_iter_twin(); it != end; ++it)
     {
+        if(!it.is_block_ocuppied())
+        {
+            full_size_avail += it.size();
+        }
         result.push_back({it.size(), it.is_block_ocuppied()});
     }
 
@@ -385,4 +415,31 @@ bool allocator_buddies_system::iterator_twin::operator==(const allocator_buddies
 bool allocator_buddies_system::iterator_twin::operator!=(const allocator_buddies_system::iterator_twin &oth) const noexcept
 {
     return !(*this == oth);
+}
+
+std::string allocator_buddies_system::get_info_in_string(const std::vector<allocator_test_utils::block_info>& vec) noexcept
+{
+    std::ostringstream str;
+    for(auto& it : vec)
+    {
+        if(it.is_block_occupied)
+        {
+            str << "<occup>";
+        }
+        else
+            str << "<avail>";
+
+        str << " <"+ std::to_string(it.block_size) + "> | ";
+    }
+    return str.str();
+}
+
+std::string allocator_buddies_system::get_dump(char* at, size_t size)
+{
+    std::string result;
+    for(size_t i = 0; i < size; ++i)
+    {
+        result += std::to_string(static_cast<int>(at[i])) + " ";
+    }
+    return result;
 }

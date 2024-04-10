@@ -7,17 +7,18 @@
 #include <logger_guardant.h>
 #include <typename_holder.h>
 #include <mutex>
+#include <sstream>
 
 namespace __cnst
 {
     constexpr size_t next_power_2(size_t number) {
-
         size_t power = 1;
+        size_t k = 0;
         while (power < number) {
             power <<= 1;
+            ++k;
         }
-
-        return power;
+        return k;
     }
 }
 
@@ -154,6 +155,10 @@ private:
     iterator_twin begin_for_iter_twin() const noexcept;
 
     iterator_twin end_for_iter_twin() const noexcept;
+
+    static std::string get_info_in_string(const std::vector<allocator_test_utils::block_info>& vec) noexcept;
+
+    static std::string get_dump(char* at, size_t size);
 };
 
 #endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_ALLOCATOR_ALLOCATOR_BUDDIES_SYSTEM_H
