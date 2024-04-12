@@ -2,6 +2,7 @@
 #include <binary_search_tree.h>
 #include <logger_builder.h>
 #include <client_logger_builder.h>
+#include <allocator_sorted_list.h>
 #include <iostream>
 
 logger *create_logger(

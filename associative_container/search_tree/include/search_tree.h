@@ -24,7 +24,11 @@ class search_tree:
 
 public:
     
-    struct __attribute__((unused)) common_node
+    struct
+#ifdef __MINGW32__
+    __attribute__((unused))
+#endif
+    common_node
     {
     
     public:

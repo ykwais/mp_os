@@ -718,7 +718,11 @@ protected:
 
     virtual tvalue const& obtain_inside(std::stack<node**>& stk);
 
-    virtual tvalue dispose(const tkey& key, std::stack<node**>& stk);
+    virtual tvalue dispose_inside(std::stack<node**>& stk);
+
+    void print_tree() const noexcept;
+
+    void print_tree(size_t level, node* root) const noexcept;
     
     // region subtree rotations definition
     
@@ -750,8 +754,6 @@ protected:
     
     // endregion subtree rotations definition
 
-
-    
 };
 
 
@@ -1687,7 +1689,7 @@ binary_search_tree<tkey, tvalue>::binary_search_tree(
     logger *logger,
     typename binary_search_tree<tkey, tvalue>::insertion_of_existent_key_attempt_strategy insertion_strategy,
     typename binary_search_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_strategy disposal_strategy):
-        search_tree<tkey, tvalue>(keys_comparer, allocator, logger), _root(nullptr), _dispose_nonexist_strategy(disposal_strategy), _insert_exist_strategy(insertion_strategy) {}
+        search_tree<tkey, tvalue>(keys_comparer, logger, allocator), _root(nullptr), _dispose_nonexist_strategy(disposal_strategy), _insert_exist_strategy(insertion_strategy) {}
 
 template<
     typename tkey,
@@ -1804,8 +1806,7 @@ tvalue const &binary_search_tree<tkey, tvalue>::obtain(
         throw obtaining_of_nonexistent_key_attempt_exception(key);
     }
 
-    //return //
-
+    return obtain_inside(path);
 }
 
 template<
@@ -1847,7 +1848,7 @@ tvalue binary_search_tree<tkey, tvalue>::dispose(
         }
     }
 
-    //dispose
+    return dispose_inside(path);
 
 }
 
@@ -1916,9 +1917,58 @@ tvalue const& binary_search_tree<tkey, tvalue>::obtain_inside(std::stack<node**>
 }
 
 template<typename tkey, typename tvalue>
-tvalue binary_search_tree<tkey, tvalue>::dispose(const tkey& key, std::stack<node**>& stk)
+tvalue binary_search_tree<tkey, tvalue>::dispose_inside(std::stack<node**>& stk)
 {
+    node* current_node = *stk.top();
 
+    if(current_node->left_subtree == nullptr && current_node->right_subtree == nullptr)
+    {
+        *stk.top() = nullptr;
+    }
+    else if(current_node->right_subtree == nullptr || current_node->left_subtree == nullptr)
+    {
+        node* update_node = current_node->right_subtree != nullptr ? (current_node->right_subtree) : (current_node->left_subtree);
+
+        *stk.top() = update_node;
+    }
+    else
+    {
+        node** update = &(*stk.top()->left_subtree);
+
+        while(*update->right_subtree != nullptr)
+        {
+            update = &(*update->right_subtree);
+        }
+
+        node* previous_node = *stk.top();
+
+        *(stk.top()) = *update;
+
+        *update = *update->left_subtree;
+
+        *(stk.top())->left_subtree = *previous_node->left_subtree;
+        *(stk.top())->right_subtree = *previous_node->right_subtree;
+
+    }
+
+    tvalue res = current_node->value;
+    allocator::destruct(current_node);
+    allocator::deallocate(current_node);
+    return res;
+}
+
+template<typename tkey, typename tvalue>
+void binary_search_tree<tkey, tvalue>::print_tree(size_t level, node* root) const noexcept
+{
+    print_tree(level+1, root->left_subtree);
+    std::cout<<search_tree<tkey,tvalue>::key_value_pair::key<<std::cout;
+    print_tree(level+1, root->left_subtree);
+}
+
+template<typename tkey, typename tvalue>
+void binary_search_tree<tkey, tvalue>::print_tree() const noexcept
+{
+    return print_tree(0, _root);
 }
 
 

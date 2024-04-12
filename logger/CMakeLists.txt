@@ -8,4 +8,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(client_logger)
 add_subdirectory(logger)
-add_subdirectory(server_logger)
+
+if(WIN32)
+    add_subdirectory(server_logger)
+endif (WIN32)
