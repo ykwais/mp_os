@@ -72,6 +72,7 @@ public:
         bool lower_bound_inclusive,
         bool upper_bound_inclusive) = 0;
 
+
 protected:
     
     [[nodiscard]] inline allocator *get_allocator() const final;

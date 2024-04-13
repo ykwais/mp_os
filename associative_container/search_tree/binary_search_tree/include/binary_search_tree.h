@@ -641,6 +641,7 @@ public:
     
     tvalue dispose(
         tkey const &key) final;
+
     
 public:
 
@@ -720,9 +721,6 @@ protected:
 
     virtual tvalue dispose_inside(std::stack<node**>& stk);
 
-    void print_tree() const noexcept;
-
-    void print_tree(size_t level, node* root) const noexcept;
     
     // region subtree rotations definition
     
@@ -1704,9 +1702,9 @@ template<
     typename tkey,
     typename tvalue>
 binary_search_tree<tkey, tvalue>::binary_search_tree(
-    binary_search_tree<tkey, tvalue> &&other) noexcept
+    binary_search_tree<tkey, tvalue> &&other) noexcept : search_tree<tkey, tvalue>(other)
 {
-    throw not_implemented("template<typename tkey, typename tvalue> binary_search_tree<tkey, tvalue>::binary_search_tree(binary_search_tree<tkey, tvalue> &&) noexcept", "your code should be here...");
+    //throw not_implemented("template<typename tkey, typename tvalue> binary_search_tree<tkey, tvalue>::binary_search_tree(binary_search_tree<tkey, tvalue> &&) noexcept", "your code should be here...");
 }
 
 template<
@@ -1837,7 +1835,7 @@ tvalue binary_search_tree<tkey, tvalue>::dispose(
         }
         else
         {
-            if constexpr (std::is_default_constructible<tvalue>::is_there)
+            if constexpr (std::is_default_constructible<tvalue>::value)
             {
                 return {};//tvalue()
             }
@@ -1933,43 +1931,31 @@ tvalue binary_search_tree<tkey, tvalue>::dispose_inside(std::stack<node**>& stk)
     }
     else
     {
-        node** update = &(*stk.top()->left_subtree);
+        node** update = &((*stk.top())->left_subtree);
 
-        while(*update->right_subtree != nullptr)
+        while((*update)->right_subtree != nullptr)
         {
-            update = &(*update->right_subtree);
+            update = &((*update)->right_subtree);
         }
 
         node* previous_node = *stk.top();
 
         *(stk.top()) = *update;
 
-        *update = *update->left_subtree;
+        *update = (*update)->left_subtree;
 
-        *(stk.top())->left_subtree = *previous_node->left_subtree;
-        *(stk.top())->right_subtree = *previous_node->right_subtree;
+        (*stk.top())->left_subtree = previous_node->left_subtree;
+        (*stk.top())->right_subtree = previous_node->right_subtree;
 
     }
 
     tvalue res = current_node->value;
     allocator::destruct(current_node);
-    allocator::deallocate(current_node);
+    allocator_guardant::deallocate_with_guard(current_node);
     return res;
 }
 
-template<typename tkey, typename tvalue>
-void binary_search_tree<tkey, tvalue>::print_tree(size_t level, node* root) const noexcept
-{
-    print_tree(level+1, root->left_subtree);
-    std::cout<<search_tree<tkey,tvalue>::key_value_pair::key<<std::cout;
-    print_tree(level+1, root->left_subtree);
-}
 
-template<typename tkey, typename tvalue>
-void binary_search_tree<tkey, tvalue>::print_tree() const noexcept
-{
-    return print_tree(0, _root);
-}
 
 
 

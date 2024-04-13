@@ -155,6 +155,31 @@ bool postfix_iterator_test(
     return true;
 }
 
+TEST(own, test1)
+{
+    search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+
+    bst->insert(5, "a");
+    bst->insert(2, "b");
+    bst->insert(15, "c");
+    bst->insert(3, "d");
+    bst->insert(14, "e");
+    bst->insert(1, "l");
+    std::cout<<bst->obtain(1) << std::endl;
+    std::cout<<bst->obtain(15) << std::endl;
+    std::cout<<bst->obtain(5) << std::endl;
+    std::cout<<bst->obtain(14) << std::endl;
+    bst->dispose(5);
+    bst->dispose(3);
+    bst->dispose(14);
+    bst->dispose(2);
+    bst->dispose(1);
+    bst->dispose(15);
+
+
+    //delete bst;
+}
+
 TEST(binarySearchTreePositiveTests, test1)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
