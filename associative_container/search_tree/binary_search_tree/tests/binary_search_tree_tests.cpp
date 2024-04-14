@@ -92,8 +92,8 @@ bool infix_iterator_test(
     binary_search_tree<tkey, tvalue> const &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_infix = tree.cend_infix();
-    auto it = tree.cbegin_infix();
+    auto end_infix = tree.cend_infix();/////////////////
+    auto it = tree.cbegin_infix();/////////////////////
     
     for (auto const &item: expected_result)
     {
@@ -115,8 +115,8 @@ bool prefix_iterator_test(
     binary_search_tree<tkey, tvalue> const &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_prefix = tree.cend_prefix();
-    auto it = tree.cbegin_prefix();
+    auto end_prefix = tree.cend_prefix();//////////////////
+    auto it = tree.cbegin_prefix();/////////////////
     
     for (auto const &item: expected_result)
     {
@@ -139,7 +139,7 @@ bool postfix_iterator_test(
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_postfix = tree.end_postfix();
+    auto end_postfix = tree.cend_postfix();
     auto it = tree.cbegin_postfix();
     
     for (auto const &item: expected_result)
@@ -177,10 +177,10 @@ TEST(own, test1)
     bst->dispose(15);
 
 
-    //delete bst;
+    delete bst;
 }
 
-TEST(binarySearchTreePositiveTests, test1)
+TEST(binarySearchTreePositiveTests, test111)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -218,7 +218,7 @@ TEST(binarySearchTreePositiveTests, test1)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test2)
+TEST(binarySearchTreePositiveTests, test222)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -254,7 +254,7 @@ TEST(binarySearchTreePositiveTests, test2)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test3)
+TEST(binarySearchTreePositiveTests, test333)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -290,7 +290,7 @@ TEST(binarySearchTreePositiveTests, test3)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test4)
+TEST(binarySearchTreePositiveTests, test444)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -330,7 +330,7 @@ TEST(binarySearchTreePositiveTests, test4)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test5)
+TEST(binarySearchTreePositiveTests, test555)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -372,7 +372,7 @@ TEST(binarySearchTreePositiveTests, test5)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test6)
+TEST(binarySearchTreePositiveTests, test666)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -411,7 +411,7 @@ TEST(binarySearchTreePositiveTests, test6)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test7)
+TEST(binarySearchTreePositiveTests, test777)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -452,7 +452,7 @@ TEST(binarySearchTreePositiveTests, test7)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test8)
+TEST(binarySearchTreePositiveTests, test888)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -495,7 +495,7 @@ TEST(binarySearchTreePositiveTests, test8)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test9)
+TEST(binarySearchTreePositiveTests, test999)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -538,7 +538,7 @@ TEST(binarySearchTreePositiveTests, test9)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test10)
+TEST(binarySearchTreePositiveTests, test1010)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {
@@ -583,7 +583,7 @@ TEST(binarySearchTreePositiveTests, test10)
     delete logger;
 }
 
-TEST(binarySearchTreePositiveTests, test11)
+TEST(binarySearchTreePositiveTests, test11_11)
 {
     logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
         {

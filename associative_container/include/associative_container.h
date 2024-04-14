@@ -20,8 +20,10 @@ public:
         
         tkey key;
         tvalue value;
-        
+
+        bool operator==(const key_value_pair& other) const noexcept;
     };
+
     
     struct key_value_ptr_pair
     {
@@ -64,5 +66,12 @@ public:
         tkey const &key) = 0;
     
 };
+
+template<typename tkey, typename tvalue>
+bool associative_container<tkey, tvalue>::key_value_pair::operator==(
+        const associative_container::key_value_pair &other) const noexcept
+{
+    return key == other.key && value == other.value;
+}
 
 #endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_ASSOCIATIVE_CONTAINER_H
