@@ -238,7 +238,7 @@ public:
     
     class infix_reverse_iterator final
     {
-        iterator_data _it_data;
+        mutable iterator_data _it_data;
         std::stack<node**> _path;
     
     public:
