@@ -3,6 +3,9 @@
 #include <logger_builder.h>
 #include <client_logger_builder.h>
 #include <allocator_sorted_list.h>
+#include <allocator_boundary_tags.h>
+#include <allocator_global_heap.h>
+#include <allocator_buddies_system.h>
 #include <iostream>
 
 logger *create_logger(
@@ -92,8 +95,8 @@ bool infix_iterator_test(
     binary_search_tree<tkey, tvalue> const &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_infix = tree.rend_infix();/////////////////
-    auto it = tree.rbegin_infix();/////////////////////
+    auto end_infix = tree.end_infix();/////////////////
+    auto it = tree.begin_infix();/////////////////////
     
     for (auto const &item: expected_result)
     {
@@ -115,8 +118,8 @@ bool prefix_iterator_test(
     binary_search_tree<tkey, tvalue> const &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_prefix = tree.cend_prefix();//////////////////
-    auto it = tree.cbegin_prefix();/////////////////
+    auto end_prefix = tree.end_prefix();//////////////////
+    auto it = tree.begin_prefix();/////////////////
     
     for (auto const &item: expected_result)
     {
@@ -139,8 +142,8 @@ bool postfix_iterator_test(
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_postfix = tree.cend_postfix();
-    auto it = tree.cbegin_postfix();
+    auto end_postfix = tree.end_postfix();
+    auto it = tree.begin_postfix();
     
     for (auto const &item: expected_result)
     {
@@ -157,27 +160,23 @@ bool postfix_iterator_test(
 
 TEST(own, test1)
 {
-    search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
 
-    bst->insert(5, "a");
-    bst->insert(2, "b");
-    bst->insert(15, "c");
-    bst->insert(3, "d");
-    bst->insert(14, "e");
-    bst->insert(1, "l");
-    std::cout<<bst->obtain(1) << std::endl;
-    std::cout<<bst->obtain(15) << std::endl;
-    std::cout<<bst->obtain(5) << std::endl;
-    std::cout<<bst->obtain(14) << std::endl;
-    bst->dispose(5);
-    bst->dispose(3);
-    bst->dispose(14);
-    bst->dispose(2);
-    bst->dispose(1);
-    bst->dispose(15);
+    auto bst = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto bst = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+    bst->insert(6, "a");
+    bst->insert(8, "b");
+    bst->insert(2, "c");
+    bst->insert(1, "gj");
+    bst->dispose(6);
 
 
-    delete bst;
+    //delete bst;
 }
 
 TEST(binarySearchTreePositiveTests, test111)
@@ -190,8 +189,18 @@ TEST(binarySearchTreePositiveTests, test111)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test1 started");
-    
-    search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto bst = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst->insert(5, "a");
     bst->insert(2, "b");
@@ -202,25 +211,27 @@ TEST(binarySearchTreePositiveTests, test111)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-//            binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
-//            binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
-//            binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
-//            binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
-//            binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
-//            binary_search_tree<int, std::string>::iterator_data(1, 15, "c")
-                    binary_search_tree<int, std::string>::iterator_data(1, 15, "c"),
-                    binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
-                    binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
-                    binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
-                    binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
-                    binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
+            binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
+            binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
+            binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
+            binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
+            binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
+            binary_search_tree<int, std::string>::iterator_data(1, 15, "c")
+
+                    //for reverse
+//                    binary_search_tree<int, std::string>::iterator_data(1, 15, "c"),
+//                    binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
+//                    binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
+//                    binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
+//                    binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
+//                    binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test1 finished");
     
-    delete bst;
+    //delete bst;
     delete logger;
 }
 
@@ -234,8 +245,17 @@ TEST(binarySearchTreePositiveTests, test222)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test2 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst = std::make_unique<binary_search_tree<int, int>>(key_comparer(), all.get(), logger);
+
+    //auto bst = std::make_unique<binary_search_tree<int, int>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, int> *bst = new binary_search_tree<int, int>(key_comparer(), nullptr, logger);
+    //search_tree<int, int> *bst = new binary_search_tree<int, int>(key_comparer(), nullptr, logger);
     
     bst->insert(1, 5);
     bst->insert(2, 12);
@@ -250,13 +270,21 @@ TEST(binarySearchTreePositiveTests, test222)
             binary_search_tree<int, int>::iterator_data(2, 15, 1),
             binary_search_tree<int, int>::iterator_data(3, 3, 67),
             binary_search_tree<int, int>::iterator_data(4, 4, 45)
+
+            //for reverse
+
+//                binary_search_tree<int, int>::iterator_data(0, 1, 5),
+//                binary_search_tree<int, int>::iterator_data(1, 2, 12),
+//                binary_search_tree<int, int>::iterator_data(2, 15, 1),
+//                binary_search_tree<int, int>::iterator_data(3, 3, 67),
+//                binary_search_tree<int, int>::iterator_data(4, 4, 45)
         };
     
-    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<binary_search_tree<int, int> const *>(bst), expected_result));
+    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<binary_search_tree<int, int> const *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test2 finished");
     
-    delete bst;
+    //delete bst;
     delete logger;
 }
 
@@ -270,8 +298,17 @@ TEST(binarySearchTreePositiveTests, test333)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test3 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst = std::make_unique<binary_search_tree<std::string, int>>(key_comparer(), all.get(), logger);
+
+    //auto bst = std::make_unique<binary_search_tree<std::string, int>>(key_comparer(), alll, nullptr);
     
-    search_tree<std::string, int> *bst = new binary_search_tree<std::string, int>(key_comparer(), nullptr, logger);
+    //search_tree<std::string, int> *bst = new binary_search_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     bst->insert("a", 1);
     bst->insert("b", 2);
@@ -286,13 +323,20 @@ TEST(binarySearchTreePositiveTests, test333)
             binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
             binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
             binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
+
+            //for reveerse
+//                binary_search_tree<std::string, int>::iterator_data(4, "e", 4),
+//                binary_search_tree<std::string, int>::iterator_data(3, "d", 3),
+//                binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
+//                binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
+//                binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
         };
     
-    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<binary_search_tree<std::string, int> const *>(bst), expected_result));
+    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<binary_search_tree<std::string, int> const *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test3 finished");
     
-    delete bst;
+    //delete bst;
     delete logger;
 }
 
@@ -306,8 +350,17 @@ TEST(binarySearchTreePositiveTests, test444)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test4 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -324,15 +377,23 @@ TEST(binarySearchTreePositiveTests, test444)
             binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
             binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
             binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+
+            //for reverse
+//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
-    binary_search_tree<int, std::string> bst2(std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1)));
+    binary_search_tree<int, std::string> bst2(std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get())));
     
     EXPECT_TRUE(infix_iterator_test(bst2, expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test4 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -346,8 +407,17 @@ TEST(binarySearchTreePositiveTests, test555)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test5 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -364,17 +434,25 @@ TEST(binarySearchTreePositiveTests, test555)
             binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
             binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
             binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+
+                //for reverse
+//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
-    binary_search_tree<int, std::string> bst2 = std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1));
+    binary_search_tree<int, std::string> bst2 = std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()));
     EXPECT_TRUE(infix_iterator_test(bst2, expected_result));
     
     expected_result.clear();
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test5 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -388,8 +466,17 @@ TEST(binarySearchTreePositiveTests, test666)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test6 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -407,13 +494,20 @@ TEST(binarySearchTreePositiveTests, test666)
             binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
             binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
             binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+
+                //for reverse
+//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test6 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -427,8 +521,17 @@ TEST(binarySearchTreePositiveTests, test777)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test7 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -448,13 +551,21 @@ TEST(binarySearchTreePositiveTests, test777)
             binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
             binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
             binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+
+                //for reverse
+//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 2, "l")
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test7 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -468,8 +579,17 @@ TEST(binarySearchTreePositiveTests, test888)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test8 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -491,13 +611,23 @@ TEST(binarySearchTreePositiveTests, test888)
             binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
             binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
             binary_search_tree<int, std::string>::iterator_data(3, 19, "i")
+
+            //for reverse
+//                    binary_search_tree<int, std::string>::iterator_data(3, 19, "i"),
+//                    binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
+//                    binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
+//                    binary_search_tree<int, std::string>::iterator_data(2, 12, "l"),
+//                    binary_search_tree<int, std::string>::iterator_data(3, 11, "j"),
+//                    binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//                    binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test8 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -511,8 +641,17 @@ TEST(binarySearchTreePositiveTests, test999)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test9 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "a");
     bst1->insert(8, "c");
@@ -534,13 +673,22 @@ TEST(binarySearchTreePositiveTests, test999)
             binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
             binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
             binary_search_tree<int, std::string>::iterator_data(2, 19, "i")
+
+                //for reverse
+//                binary_search_tree<int, std::string>::iterator_data(2, 19, "i"),
+//                binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
+//                binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
+//                binary_search_tree<int, std::string>::iterator_data(1, 15, "x"),
+//                binary_search_tree<int, std::string>::iterator_data(3, 12, "l"),
+//                binary_search_tree<int, std::string>::iterator_data(2, 11, "j"),
+//                binary_search_tree<int, std::string>::iterator_data(0, 8, "c"),
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test9 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -554,8 +702,17 @@ TEST(binarySearchTreePositiveTests, test1010)
             }
         });
     logger->trace("binarySearchTreePositiveTests.test10 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "l");
     bst1->insert(8, "c");
@@ -585,7 +742,7 @@ TEST(binarySearchTreePositiveTests, test1010)
     
     logger->trace("binarySearchTreePositiveTests.test10 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 
@@ -600,8 +757,17 @@ TEST(binarySearchTreePositiveTests, test11_11)
         });
     
     logger->trace("binarySearchTreePositiveTests.test11 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), all.get(), logger);
+
+    //auto bst1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *bst1 = new binary_search_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     bst1->insert(6, "l");
     bst1->insert(8, "c");
@@ -627,7 +793,7 @@ TEST(binarySearchTreePositiveTests, test11_11)
     
     logger->trace("binarySearchTreePositiveTests.test11 finished");
     
-    delete bst1;
+    //delete bst1;
     delete logger;
 }
 

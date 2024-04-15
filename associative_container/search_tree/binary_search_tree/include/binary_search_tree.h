@@ -128,7 +128,7 @@ public:
     class prefix_reverse_iterator final
     {
 
-        iterator_data _it_data;
+        mutable iterator_data _it_data;
         std::stack<node**> _path;
     
     public:
@@ -349,7 +349,7 @@ public:
     class postfix_reverse_iterator final
     {
 
-        iterator_data _it_data;
+        mutable iterator_data _it_data;
         std::stack<node**> _path;
     
     public:
@@ -2479,7 +2479,7 @@ tvalue binary_search_tree<tkey, tvalue>::dispose_inside(std::stack<node**>& stk)
 
         *update = (*update)->left_subtree;
 
-        (*stk.top())->left_subtree = previous_node->left_subtree;
+        (*stk.top())->left_subtree = previous_node->left_subtree /*;*/== *(stk.top()) ? *update : previous_node->left_subtree;
         (*stk.top())->right_subtree = previous_node->right_subtree;
 
     }
@@ -2640,7 +2640,7 @@ typename binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator binary_
         stack.push(&(_root));
     }
 
-    return prefix_reverse_iterator(stack);
+    return prefix_const_reverse_iterator(stack);
 }
 
 template<
