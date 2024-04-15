@@ -92,11 +92,11 @@ template<
     typename tkey,
     typename tvalue>
 bool infix_iterator_test(
-    binary_search_tree<tkey, tvalue> const &tree,
+    binary_search_tree<tkey, tvalue> &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_infix = tree.end_infix();/////////////////
-    auto it = tree.begin_infix();/////////////////////
+    auto end_infix = tree.crend_infix();/////////////////
+    auto it = tree.crbegin_infix();/////////////////////
     
     for (auto const &item: expected_result)
     {
@@ -115,11 +115,11 @@ template<
     typename tkey,
     typename tvalue>
 bool prefix_iterator_test(
-    binary_search_tree<tkey, tvalue> const &tree,
+    binary_search_tree<tkey, tvalue>&tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
-    auto end_prefix = tree.end_prefix();//////////////////
-    auto it = tree.begin_prefix();/////////////////
+    auto end_prefix = tree.crend_prefix();//////////////////
+    auto it = tree.crbegin_prefix();/////////////////
     
     for (auto const &item: expected_result)
     {
@@ -138,12 +138,12 @@ template<
     typename tkey,
     typename tvalue>
 bool postfix_iterator_test(
-    binary_search_tree<tkey, tvalue> const &tree,
+    binary_search_tree<tkey, tvalue> &tree,
     std::vector<typename binary_search_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_postfix = tree.end_postfix();
-    auto it = tree.begin_postfix();
+    auto end_postfix = tree.crend_postfix();
+    auto it = tree.crbegin_postfix();
     
     for (auto const &item: expected_result)
     {
@@ -211,23 +211,23 @@ TEST(binarySearchTreePositiveTests, test111)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
-            binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
-            binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
-            binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
-            binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
-            binary_search_tree<int, std::string>::iterator_data(1, 15, "c")
+//            binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 15, "c")
 
                     //for reverse
-//                    binary_search_tree<int, std::string>::iterator_data(1, 15, "c"),
-//                    binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
-//                    binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
-//                    binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
-//                    binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
-//                    binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
+                    binary_search_tree<int, std::string>::iterator_data(1, 15, "c"),
+                    binary_search_tree<int, std::string>::iterator_data(2, 14, "e"),
+                    binary_search_tree<int, std::string>::iterator_data(0, 5, "a"),
+                    binary_search_tree<int, std::string>::iterator_data(2, 3, "d"),
+                    binary_search_tree<int, std::string>::iterator_data(1, 2, "b"),
+                    binary_search_tree<int, std::string>::iterator_data(2, 1, "l"),
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst.get()), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test1 finished");
     
@@ -265,22 +265,22 @@ TEST(binarySearchTreePositiveTests, test222)
     
     std::vector<typename binary_search_tree<int, int>::iterator_data> expected_result =
         {
-            binary_search_tree<int, int>::iterator_data(0, 1, 5),
-            binary_search_tree<int, int>::iterator_data(1, 2, 12),
-            binary_search_tree<int, int>::iterator_data(2, 15, 1),
-            binary_search_tree<int, int>::iterator_data(3, 3, 67),
-            binary_search_tree<int, int>::iterator_data(4, 4, 45)
+//            binary_search_tree<int, int>::iterator_data(0, 1, 5),
+//            binary_search_tree<int, int>::iterator_data(1, 2, 12),
+//            binary_search_tree<int, int>::iterator_data(2, 15, 1),
+//            binary_search_tree<int, int>::iterator_data(3, 3, 67),
+//            binary_search_tree<int, int>::iterator_data(4, 4, 45)
 
             //for reverse
 
-//                binary_search_tree<int, int>::iterator_data(0, 1, 5),
-//                binary_search_tree<int, int>::iterator_data(1, 2, 12),
-//                binary_search_tree<int, int>::iterator_data(2, 15, 1),
-//                binary_search_tree<int, int>::iterator_data(3, 3, 67),
-//                binary_search_tree<int, int>::iterator_data(4, 4, 45)
+                binary_search_tree<int, int>::iterator_data(0, 1, 5),
+                binary_search_tree<int, int>::iterator_data(1, 2, 12),
+                binary_search_tree<int, int>::iterator_data(2, 15, 1),
+                binary_search_tree<int, int>::iterator_data(3, 3, 67),
+                binary_search_tree<int, int>::iterator_data(4, 4, 45)
         };
     
-    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<binary_search_tree<int, int> const *>(bst.get()), expected_result));
+    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<binary_search_tree<int, int> *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test2 finished");
     
@@ -318,21 +318,21 @@ TEST(binarySearchTreePositiveTests, test333)
     
     std::vector<typename binary_search_tree<std::string, int>::iterator_data> expected_result =
         {
-            binary_search_tree<std::string, int>::iterator_data(4, "e", 4),
-            binary_search_tree<std::string, int>::iterator_data(3, "d", 3),
-            binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
-            binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
-            binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
+//            binary_search_tree<std::string, int>::iterator_data(4, "e", 4),
+//            binary_search_tree<std::string, int>::iterator_data(3, "d", 3),
+//            binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
+//            binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
+//            binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
 
             //for reveerse
-//                binary_search_tree<std::string, int>::iterator_data(4, "e", 4),
-//                binary_search_tree<std::string, int>::iterator_data(3, "d", 3),
-//                binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
-//                binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
-//                binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
+                binary_search_tree<std::string, int>::iterator_data(4, "e", 4),
+                binary_search_tree<std::string, int>::iterator_data(3, "d", 3),
+                binary_search_tree<std::string, int>::iterator_data(2, "c", 15),
+                binary_search_tree<std::string, int>::iterator_data(1, "b", 2),
+                binary_search_tree<std::string, int>::iterator_data(0, "a", 1)
         };
     
-    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<binary_search_tree<std::string, int> const *>(bst.get()), expected_result));
+    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<binary_search_tree<std::string, int>  *>(bst.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test3 finished");
     
@@ -371,20 +371,20 @@ TEST(binarySearchTreePositiveTests, test444)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
-            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+//            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
 
             //for reverse
-//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
+                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
     binary_search_tree<int, std::string> bst2(std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get())));
@@ -428,27 +428,27 @@ TEST(binarySearchTreePositiveTests, test555)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
-            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
 
                 //for reverse
-//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
-//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-//            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-//            binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
+            binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+            binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
     binary_search_tree<int, std::string> bst2 = std::move(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()));
     EXPECT_TRUE(infix_iterator_test(bst2, expected_result));
     
     expected_result.clear();
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> const *>(bst1.get()), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string>  *>(bst1.get()), expected_result));
     
     logger->trace("binarySearchTreePositiveTests.test5 finished");
     
@@ -489,18 +489,18 @@ TEST(binarySearchTreePositiveTests, test666)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
-            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+//            binary_search_tree<int, std::string>::iterator_data(2, 1, "i"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
 
                 //for reverse
-//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
+                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+                binary_search_tree<int, std::string>::iterator_data(2, 1, "i")
         };
     
     EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
@@ -545,20 +545,20 @@ TEST(binarySearchTreePositiveTests, test777)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(2, 2, "l"),
-            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
+//            binary_search_tree<int, std::string>::iterator_data(2, 2, "l"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 15, "x")
 
                 //for reverse
-//                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-//                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 2, "l")
+                binary_search_tree<int, std::string>::iterator_data(2, 15, "x"),
+                binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+                binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+                binary_search_tree<int, std::string>::iterator_data(2, 5, "b"),
+                binary_search_tree<int, std::string>::iterator_data(1, 4, "j"),
+                binary_search_tree<int, std::string>::iterator_data(2, 2, "l")
         };
     
     EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
@@ -604,22 +604,22 @@ TEST(binarySearchTreePositiveTests, test888)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
-            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(3, 11, "j"),
-            binary_search_tree<int, std::string>::iterator_data(2, 12, "l"),
-            binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
-            binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
-            binary_search_tree<int, std::string>::iterator_data(3, 19, "i")
+//            binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(3, 11, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 12, "l"),
+//            binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
+//            binary_search_tree<int, std::string>::iterator_data(3, 19, "i")
 
             //for reverse
-//                    binary_search_tree<int, std::string>::iterator_data(3, 19, "i"),
-//                    binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
-//                    binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
-//                    binary_search_tree<int, std::string>::iterator_data(2, 12, "l"),
-//                    binary_search_tree<int, std::string>::iterator_data(3, 11, "j"),
-//                    binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
-//                    binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
+                    binary_search_tree<int, std::string>::iterator_data(3, 19, "i"),
+                    binary_search_tree<int, std::string>::iterator_data(5, 18, "e"),
+                    binary_search_tree<int, std::string>::iterator_data(4, 17, "b"),
+                    binary_search_tree<int, std::string>::iterator_data(2, 12, "l"),
+                    binary_search_tree<int, std::string>::iterator_data(3, 11, "j"),
+                    binary_search_tree<int, std::string>::iterator_data(1, 8, "c"),
+                    binary_search_tree<int, std::string>::iterator_data(0, 6, "a"),
 
         };
     
@@ -666,22 +666,22 @@ TEST(binarySearchTreePositiveTests, test999)
     
     std::vector<typename binary_search_tree<int, std::string>::iterator_data> expected_result =
         {
-            binary_search_tree<int, std::string>::iterator_data(0, 8, "c"),
-            binary_search_tree<int, std::string>::iterator_data(2, 11, "j"),
-            binary_search_tree<int, std::string>::iterator_data(3, 12, "l"),
-            binary_search_tree<int, std::string>::iterator_data(1, 15, "x"),
-            binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
-            binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
-            binary_search_tree<int, std::string>::iterator_data(2, 19, "i")
+//            binary_search_tree<int, std::string>::iterator_data(0, 8, "c"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 11, "j"),
+//            binary_search_tree<int, std::string>::iterator_data(3, 12, "l"),
+//            binary_search_tree<int, std::string>::iterator_data(1, 15, "x"),
+//            binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
+//            binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
+//            binary_search_tree<int, std::string>::iterator_data(2, 19, "i")
 
                 //for reverse
-//                binary_search_tree<int, std::string>::iterator_data(2, 19, "i"),
-//                binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
-//                binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
-//                binary_search_tree<int, std::string>::iterator_data(1, 15, "x"),
-//                binary_search_tree<int, std::string>::iterator_data(3, 12, "l"),
-//                binary_search_tree<int, std::string>::iterator_data(2, 11, "j"),
-//                binary_search_tree<int, std::string>::iterator_data(0, 8, "c"),
+                binary_search_tree<int, std::string>::iterator_data(2, 19, "i"),
+                binary_search_tree<int, std::string>::iterator_data(4, 18, "e"),
+                binary_search_tree<int, std::string>::iterator_data(3, 17, "b"),
+                binary_search_tree<int, std::string>::iterator_data(1, 15, "x"),
+                binary_search_tree<int, std::string>::iterator_data(3, 12, "l"),
+                binary_search_tree<int, std::string>::iterator_data(2, 11, "j"),
+                binary_search_tree<int, std::string>::iterator_data(0, 8, "c"),
         };
     
     EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<binary_search_tree<int, std::string> *>(bst1.get()), expected_result));
