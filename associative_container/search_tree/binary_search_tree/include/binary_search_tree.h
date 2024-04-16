@@ -834,7 +834,7 @@ protected:
     
     // endregion template methods definition
 
-private:
+protected:
     
     mutable node *_root;
 
@@ -2826,8 +2826,14 @@ template<typename tkey, typename tvalue>
 void binary_search_tree<tkey, tvalue>::insert_inside(const tkey& key, tvalue&& value, std::stack<node**>& stk)
 {
     (*stk.top()) =  static_cast<node*>(allocator_guardant::allocate_with_guard(sizeof(node),1));
-
-    allocator::construct(*stk.top(), key, std::move(value));
+    try {
+        allocator::construct(*stk.top(), key, std::move(value));
+    }
+    catch(...)
+    {
+        allocator_guardant::deallocate_with_guard(*stk.top());
+        throw;
+    }
 }
 
 template<typename tkey, typename tvalue>

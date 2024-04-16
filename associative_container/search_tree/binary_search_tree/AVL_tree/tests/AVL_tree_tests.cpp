@@ -119,7 +119,7 @@ bool prefix_iterator_test(
     std::vector<typename AVL_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_prefix = tree.end_prefix();
+    auto end_prefix = tree.cend_prefix();
     auto it = tree.cbegin_prefix();
     
     for (auto const &item: expected_result)
@@ -142,7 +142,7 @@ bool postfix_iterator_test(
     std::vector<typename AVL_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_postfix = tree.end_postfix();
+    auto end_postfix = tree.cend_postfix();
     auto it = tree.cbegin_postfix();
     
     for (auto const &item: expected_result)
@@ -169,7 +169,7 @@ TEST(AVLTreePositiveTests, test1)
     
     logger->trace("AVLTreePositiveTests.test1 started");
     
-    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl->insert(5, "a");
     avl->insert(2, "b");
@@ -208,7 +208,7 @@ TEST(AVLTreePositiveTests, test2)
     
     logger->trace("AVLTreePositiveTests.test2 started");
     
-    search_tree<int, int> *avl = new AVL_tree<int, int>(nullptr, logger);
+    search_tree<int, int> *avl = new AVL_tree<int, int>(key_comparer(), nullptr, logger);
     
     avl->insert(1, 5);
     avl->insert(2, 12);
@@ -245,7 +245,7 @@ TEST(AVLTreePositiveTests, test3)
     
     logger->trace("AVLTreePositiveTests.test3 started");
     
-    search_tree<std::string, int> *avl = new AVL_tree<std::string, int>(nullptr, logger);
+    search_tree<std::string, int> *avl = new AVL_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     avl->insert("a", 1);
     avl->insert("b", 2);
@@ -282,7 +282,7 @@ TEST(AVLTreePositiveTests, test4)
     
     logger->trace("AVLTreePositiveTests.test4 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -323,7 +323,7 @@ TEST(AVLTreePositiveTests, test5)
     
     logger->trace("AVLTreePositiveTests.test5 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -364,7 +364,7 @@ TEST(AVLTreePositiveTests, test6)
     
     logger->trace("AVLTreePositiveTests.test6 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -404,7 +404,7 @@ TEST(AVLTreePositiveTests, test7)
     
     logger->trace("AVLTreePositiveTests.test7 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -447,7 +447,7 @@ TEST(AVLTreePositiveTests, test8)
     
     logger->trace("AVLTreePositiveTests.test8 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -491,7 +491,7 @@ TEST(AVLTreePositiveTests, test9)
     
     logger->trace("AVLTreePositiveTests.test9 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -536,7 +536,7 @@ TEST(AVLTreePositiveTests, test10)
     
     logger->trace("AVLTreePositiveTests.test10 started");
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "l");
     avl1->insert(8, "c");
@@ -583,7 +583,7 @@ TEST(AVLTreePositiveTests, test11)
     
     logger->trace("AVLTreePositiveTests.test11 started");
     
-    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl->insert(6, "l");
     avl->insert(8, "c");
