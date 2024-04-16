@@ -97,16 +97,9 @@ public:
     protected:
 
 
-//        mutable iterator_data _it_data;
-//        std::stack<node**> _path;
-
         std::unique_ptr<iterator_data> _it_data;
         std::stack<node**> _path;
 
-//        void update_value(std::stack<node**>& path)
-//        {
-//            _it_data->update_iterator_data(path);
-//        }
 
         iterator_data* clone_data() const
         {
@@ -997,31 +990,17 @@ protected:
     
     // region subtree rotations definition
     
-    void small_left_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool validate = true) const;
+    void small_left_rotation( typename binary_search_tree<tkey, tvalue>::node*& subtree_root ) const;
     
-    void small_right_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool validate = true) const;
+    void small_right_rotation( typename binary_search_tree<tkey, tvalue>::node*& subtree_root ) const;
     
-    void big_left_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool validate = true) const;
+    void big_left_rotation( typename binary_search_tree<tkey, tvalue>::node*& subtree_root ) const;
     
-    void big_right_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool validate = true) const;
+    void big_right_rotation( typename binary_search_tree<tkey, tvalue>::node*& subtree_root ) const;
     
-    void double_left_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool at_grandparent_first,
-        bool validate = true) const;
+    void double_left_rotation( typename binary_search_tree<tkey, tvalue>::node*& subtree_root) const;
     
-    void double_right_rotation(
-        typename binary_search_tree<tkey, tvalue>::node *&subtree_root,
-        bool at_grandparent_first,
-        bool validate = true) const;
+    void double_right_rotation( typename binary_search_tree<tkey, tvalue>::node *&subtree_root ) const;
     
     // endregion subtree rotations definition
 
@@ -1184,7 +1163,7 @@ binary_search_tree<tkey, tvalue>::prefix_const_iterator& binary_search_tree<tkey
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1288,7 +1267,7 @@ binary_search_tree<tkey, tvalue>::prefix_reverse_iterator::prefix_reverse_iterat
     }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::prefix_reverse_iterator::prefix_reverse_iterator(const prefix_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::prefix_reverse_iterator::prefix_reverse_iterator(const prefix_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::prefix_reverse_iterator& binary_search_tree<tkey, tvalue>::prefix_reverse_iterator::operator=(const prefix_reverse_iterator& oth)
@@ -1296,7 +1275,7 @@ binary_search_tree<tkey, tvalue>::prefix_reverse_iterator& binary_search_tree<tk
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1407,7 +1386,7 @@ binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator::prefix_const_re
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator::prefix_const_reverse_iterator(const prefix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator::prefix_const_reverse_iterator(const prefix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator& binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator::operator=(const prefix_const_reverse_iterator& oth)
@@ -1415,7 +1394,7 @@ binary_search_tree<tkey, tvalue>::prefix_const_reverse_iterator& binary_search_t
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1527,7 +1506,7 @@ binary_search_tree<tkey, tvalue>::infix_iterator::infix_iterator(const std::stac
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::infix_iterator::infix_iterator(const infix_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::infix_iterator::infix_iterator(const infix_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::infix_iterator& binary_search_tree<tkey, tvalue>::infix_iterator::operator=(const infix_iterator& oth)
@@ -1535,7 +1514,7 @@ binary_search_tree<tkey, tvalue>::infix_iterator& binary_search_tree<tkey, tvalu
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1635,7 +1614,7 @@ binary_search_tree<tkey, tvalue>::infix_const_iterator::infix_const_iterator(con
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::infix_const_iterator::infix_const_iterator(const infix_const_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::infix_const_iterator::infix_const_iterator(const infix_const_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}////////////////////////////////////////////////TODO
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::infix_const_iterator& binary_search_tree<tkey, tvalue>::infix_const_iterator::operator=(const infix_const_iterator& oth)
@@ -1643,7 +1622,7 @@ binary_search_tree<tkey, tvalue>::infix_const_iterator& binary_search_tree<tkey,
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1742,7 +1721,7 @@ binary_search_tree<tkey, tvalue>::infix_reverse_iterator::infix_reverse_iterator
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::infix_reverse_iterator::infix_reverse_iterator(const infix_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::infix_reverse_iterator::infix_reverse_iterator(const infix_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::infix_reverse_iterator& binary_search_tree<tkey, tvalue>::infix_reverse_iterator::operator=(const infix_reverse_iterator& oth)
@@ -1750,7 +1729,7 @@ binary_search_tree<tkey, tvalue>::infix_reverse_iterator& binary_search_tree<tke
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1850,7 +1829,7 @@ binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator::infix_const_reve
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator::infix_const_reverse_iterator(const infix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator::infix_const_reverse_iterator(const infix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator& binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator::operator=(const infix_const_reverse_iterator& oth)
@@ -1858,7 +1837,7 @@ binary_search_tree<tkey, tvalue>::infix_const_reverse_iterator& binary_search_tr
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -1958,7 +1937,7 @@ binary_search_tree<tkey, tvalue>::postfix_iterator::postfix_iterator(const std::
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::postfix_iterator::postfix_iterator(const postfix_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::postfix_iterator::postfix_iterator(const postfix_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::postfix_iterator& binary_search_tree<tkey, tvalue>::postfix_iterator::operator=(const postfix_iterator& oth)
@@ -1966,7 +1945,7 @@ binary_search_tree<tkey, tvalue>::postfix_iterator& binary_search_tree<tkey, tva
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -2054,7 +2033,7 @@ binary_search_tree<tkey, tvalue>::postfix_const_iterator::postfix_const_iterator
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::postfix_const_iterator::postfix_const_iterator(const postfix_const_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::postfix_const_iterator::postfix_const_iterator(const postfix_const_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::postfix_const_iterator& binary_search_tree<tkey, tvalue>::postfix_const_iterator::operator=(const postfix_const_iterator& oth)
@@ -2062,7 +2041,7 @@ binary_search_tree<tkey, tvalue>::postfix_const_iterator& binary_search_tree<tke
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -2150,7 +2129,7 @@ binary_search_tree<tkey, tvalue>::postfix_reverse_iterator::postfix_reverse_iter
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::postfix_reverse_iterator::postfix_reverse_iterator(const postfix_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::postfix_reverse_iterator::postfix_reverse_iterator(const postfix_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::postfix_reverse_iterator& binary_search_tree<tkey, tvalue>::postfix_reverse_iterator::operator=(const postfix_reverse_iterator& oth)
@@ -2158,7 +2137,7 @@ binary_search_tree<tkey, tvalue>::postfix_reverse_iterator& binary_search_tree<t
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -2248,7 +2227,7 @@ binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator::postfix_const_
 }
 
 template<typename tkey, typename tvalue>
-binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator::postfix_const_reverse_iterator(const postfix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth._it_data) {}
+binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator::postfix_const_reverse_iterator(const postfix_const_reverse_iterator& oth) : _path(oth._path), _it_data(oth.clone_data()) {}
 
 template<typename tkey, typename tvalue>
 binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator& binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator::operator=(const postfix_const_reverse_iterator& oth)
@@ -2256,7 +2235,7 @@ binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator& binary_search_
     if(*this == oth)
     {
         _path = oth._path;
-        _it_data = std::unique_ptr<iterator_data>(oth._it_data.get());
+        _it_data = std::unique_ptr<iterator_data>(oth.clone_data());
     }
 
     return *this;
@@ -3269,63 +3248,81 @@ typename binary_search_tree<tkey, tvalue>::postfix_const_reverse_iterator binary
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::small_left_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::small_left_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const//root - относительно него вращение
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::small_left_rotation(binary_search_tree<tkey, tvalue>::node *&, bool) const", "your code should be here...");
+    if(subtree_root != nullptr && subtree_root->right_subtree != nullptr)
+    {
+        node* ex_top = subtree_root;
+
+        subtree_root = subtree_root->right_subtree;
+        ex_top->right_subtree = subtree_root->left_subtree;
+        subtree_root->left_subtree = ex_top;
+
+    }
 }
 
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::small_right_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::small_right_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::small_right_rotation(binary_search_tree<tkey, tvalue>::node *&, bool) const", "your code should be here...");
+    if(subtree_root != nullptr  && subtree_root->left_subtree != nullptr)
+    {
+        node* ex_top = subtree_root;
+
+        subtree_root = subtree_root->left_subtree;
+        ex_top->left_subtree = subtree_root->right_subtree;
+        subtree_root->right_subtree = ex_top;
+    }
 }
 
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::big_left_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::big_left_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::big_left_rotation(binary_search_tree<tkey, tvalue>::node *&, bool) const", "your code should be here...");
+    if(subtree_root != nullptr && subtree_root->right_subtree != nullptr && subtree_root->right_subtree->left_subtree != nullptr)
+    {
+        small_right_rotation(subtree_root->right_subtree);
+        small_left_rotation(subtree_root);
+    }
 }
 
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::big_right_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::big_right_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::big_right_rotation(binary_search_tree<tkey, tvalue>::node *&, bool) const", "your code should be here...");
+    if(subtree_root != nullptr && subtree_root->left_subtree != nullptr && subtree_root->left_subtree->right_subtree != nullptr)
+    {
+        small_left_rotation(subtree_root->left_subtree);
+        small_right_rotation(subtree_root);
+    }
 }
 
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::double_left_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool at_grandparent_first,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::double_left_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::double_left_rotation(binary_search_tree<tkey, tvalue>::node *&, bool, bool) const", "your code should be here...");
+    if(subtree_root != nullptr && subtree_root->right_subtree != nullptr && subtree_root->right_subtree->right_subtree != nullptr)
+    {
+        small_left_rotation(subtree_root);
+        small_left_rotation(subtree_root);
+    }
+
 }
 
 template<
     typename tkey,
     typename tvalue>
-void binary_search_tree<tkey, tvalue>::double_right_rotation(
-    binary_search_tree<tkey, tvalue>::node *&subtree_root,
-    bool at_grandparent_first,
-    bool validate) const
+void binary_search_tree<tkey, tvalue>::double_right_rotation( binary_search_tree<tkey, tvalue>::node *&subtree_root ) const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> void binary_search_tree<tkey, tvalue>::double_right_rotation(binary_search_tree<tkey, tvalue>::node *&, bool, bool) const", "your code should be here...");
+    if(subtree_root != nullptr && subtree_root->leftsubtree != nullptr && subtree_root->left_subtree->left_subtree != nullptr)
+    {
+        small_right_rotation(subtree_root);
+        small_right_rotation(subtree_root);
+    }
 }
 
 // endregion subtree rotations implementation
