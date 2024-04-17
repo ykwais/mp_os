@@ -2,6 +2,10 @@
 #include <AVL_tree.h>
 #include <logger_builder.h>
 #include <client_logger_builder.h>
+#include <allocator_sorted_list.h>
+#include <allocator_boundary_tags.h>
+#include <allocator_global_heap.h>
+#include <allocator_buddies_system.h>
 #include <iostream>
 
 logger *create_logger(
@@ -91,7 +95,7 @@ template<
     typename tkey,
     typename tvalue>
 bool infix_iterator_test(
-    AVL_tree<tkey, tvalue> const &tree,
+    AVL_tree<tkey, tvalue> &tree,
     std::vector<typename AVL_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
@@ -115,7 +119,7 @@ template<
     typename tkey,
     typename tvalue>
 bool prefix_iterator_test(
-    AVL_tree<tkey, tvalue> const &tree,
+    AVL_tree<tkey, tvalue> &tree,
     std::vector<typename AVL_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
@@ -138,7 +142,7 @@ template<
     typename tkey,
     typename tvalue>
 bool postfix_iterator_test(
-    AVL_tree<tkey, tvalue> const &tree,
+    AVL_tree<tkey, tvalue> &tree,
     std::vector<typename AVL_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
@@ -168,8 +172,18 @@ TEST(AVLTreePositiveTests, test1)
         });
     
     logger->trace("AVLTreePositiveTests.test1 started");
-    
-    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl->insert(5, "a");
     avl->insert(2, "b");
@@ -177,6 +191,10 @@ TEST(AVLTreePositiveTests, test1)
     avl->insert(3, "d");
     avl->insert(14, "e");
     avl->insert(1, "l");
+
+//    avl->insert(10, "a");
+//    avl->insert(15, "b");
+//    avl->insert(20, "c");
     
     std::vector<typename AVL_tree<int, std::string>::iterator_data> expected_result =
         {
@@ -188,11 +206,11 @@ TEST(AVLTreePositiveTests, test1)
             AVL_tree<int, std::string>::iterator_data(1, 15, "c", 2)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test1 finished");
     
-    delete avl;
+    //delete avl;
     delete logger;
 }
 
@@ -207,8 +225,17 @@ TEST(AVLTreePositiveTests, test2)
         });
     
     logger->trace("AVLTreePositiveTests.test2 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl = std::make_unique<AVL_tree<int, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, int> *avl = new AVL_tree<int, int>(key_comparer(), nullptr, logger);
+    //search_tree<int, int> *avl = new AVL_tree<int, int>(key_comparer(), nullptr, logger);
     
     avl->insert(1, 5);
     avl->insert(2, 12);
@@ -225,11 +252,11 @@ TEST(AVLTreePositiveTests, test2)
             AVL_tree<int, int>::iterator_data(2, 15, 1, 1)
         };
     
-    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<AVL_tree<int, int> *>(avl), expected_result));
+    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<AVL_tree<int, int> *>(avl.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test2 finished");
     
-    delete avl;
+    //delete avl;
     delete logger;
 }
 
@@ -244,8 +271,17 @@ TEST(AVLTreePositiveTests, test3)
         });
     
     logger->trace("AVLTreePositiveTests.test3 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl = std::make_unique<AVL_tree<std::string, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<std::string, int> *avl = new AVL_tree<std::string, int>(key_comparer(), nullptr, logger);
+    //search_tree<std::string, int> *avl = new AVL_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     avl->insert("a", 1);
     avl->insert("b", 2);
@@ -262,11 +298,11 @@ TEST(AVLTreePositiveTests, test3)
             AVL_tree<std::string, int>::iterator_data(0, "b", 2, 3)
         };
     
-    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<AVL_tree<std::string, int> *>(avl), expected_result));
+    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<AVL_tree<std::string, int> *>(avl.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test3 finished");
     
-    delete avl;
+    //delete avl;
     delete logger;
 }
 
@@ -281,8 +317,17 @@ TEST(AVLTreePositiveTests, test4)
         });
     
     logger->trace("AVLTreePositiveTests.test4 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -301,13 +346,13 @@ TEST(AVLTreePositiveTests, test4)
             AVL_tree<int, std::string>::iterator_data(2, 15, "x", 1)
         };
     
-    AVL_tree<int, std::string> avl2(std::move(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1)));
+    AVL_tree<int, std::string> avl2(std::move(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get())));
     
     EXPECT_TRUE(infix_iterator_test(avl2, expected_result));
     
     logger->trace("AVLTreePositiveTests.test4 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
 }
 
@@ -322,8 +367,17 @@ TEST(AVLTreePositiveTests, test5)
         });
     
     logger->trace("AVLTreePositiveTests.test5 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -342,13 +396,13 @@ TEST(AVLTreePositiveTests, test5)
             AVL_tree<int, std::string>::iterator_data(2, 15, "x", 1)
         };
     
-    AVL_tree<int, std::string> avl2 = std::move(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1));
+    AVL_tree<int, std::string> avl2 = std::move(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get()));
     
     EXPECT_TRUE(infix_iterator_test(avl2, expected_result));
     
     logger->trace("AVLTreePositiveTests.test5 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
 }
 
@@ -363,8 +417,17 @@ TEST(AVLTreePositiveTests, test6)
         });
     
     logger->trace("AVLTreePositiveTests.test6 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -384,11 +447,11 @@ TEST(AVLTreePositiveTests, test6)
             AVL_tree<int, std::string>::iterator_data(2, 15, "x", 1)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test6 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
 }
 
@@ -403,8 +466,17 @@ TEST(AVLTreePositiveTests, test7)
         });
     
     logger->trace("AVLTreePositiveTests.test7 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -420,17 +492,17 @@ TEST(AVLTreePositiveTests, test7)
         {
             AVL_tree<int, std::string>::iterator_data(2, 2, "l", 1),
             AVL_tree<int, std::string>::iterator_data(1, 4, "j", 2),
-            AVL_tree<int, std::string>::iterator_data(1, 5, "b", 1),
+            AVL_tree<int, std::string>::iterator_data(2, 5, "b", 1),
             AVL_tree<int, std::string>::iterator_data(0, 6, "a", 3),
             AVL_tree<int, std::string>::iterator_data(1, 8, "c", 2),
             AVL_tree<int, std::string>::iterator_data(2, 15, "x", 1)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test7 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
     
 }
@@ -446,8 +518,17 @@ TEST(AVLTreePositiveTests, test8)
         });
     
     logger->trace("AVLTreePositiveTests.test8 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -471,11 +552,11 @@ TEST(AVLTreePositiveTests, test8)
             AVL_tree<int, std::string>::iterator_data(2, 19, "i", 1)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test8 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
 }
 
@@ -490,8 +571,17 @@ TEST(AVLTreePositiveTests, test9)
         });
     
     logger->trace("AVLTreePositiveTests.test9 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "a");
     avl1->insert(8, "c");
@@ -515,11 +605,11 @@ TEST(AVLTreePositiveTests, test9)
             AVL_tree<int, std::string>::iterator_data(2, 19, "i", 1)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<AVL_tree<int, std::string> *>(avl1.get()), expected_result));
     
     logger->trace("AVLTreePositiveTests.test9 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
     
 }
@@ -535,8 +625,17 @@ TEST(AVLTreePositiveTests, test10)
         });
     
     logger->trace("AVLTreePositiveTests.test10 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl1 = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl1 = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl1->insert(6, "l");
     avl1->insert(8, "c");
@@ -566,7 +665,7 @@ TEST(AVLTreePositiveTests, test10)
     
     logger->trace("AVLTreePositiveTests.test10 finished");
     
-    delete avl1;
+    //delete avl1;
     delete logger;
     
 }
@@ -582,8 +681,17 @@ TEST(AVLTreePositiveTests, test11)
         });
     
     logger->trace("AVLTreePositiveTests.test11 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto avl = std::make_unique<AVL_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto avl = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *avl = new AVL_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     avl->insert(6, "l");
     avl->insert(8, "c");
@@ -609,7 +717,7 @@ TEST(AVLTreePositiveTests, test11)
     
     logger->trace("AVLTreePositiveTests.test11 finished");
     
-    delete avl;
+    //delete avl;
     delete logger;
 }
 

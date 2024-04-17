@@ -3,6 +3,7 @@
 
 #include <binary_search_tree.h>
 #include <stack>
+#include <queue>
 
 template<
     typename tkey,
@@ -32,8 +33,8 @@ private:
 
         void update_height() noexcept
         {
-            size_t left_height = binary_search_tree<tkey, tvalue>::node::left_subtree ? static_cast<node*>(binary_search_tree<tkey, tvalue>::node::left_subtree)->_height : 0;
-            size_t right_height = binary_search_tree<tkey, tvalue>::node::right_subtree ? static_cast<node*>(binary_search_tree<tkey, tvalue>::node::right_subtree)->_height : 0;
+            size_t left_height = binary_search_tree<tkey, tvalue>::node::left_subtree != nullptr ? static_cast<node*>(binary_search_tree<tkey, tvalue>::node::left_subtree)->_height : 0;
+            size_t right_height = binary_search_tree<tkey, tvalue>::node::right_subtree != nullptr ? static_cast<node*>(binary_search_tree<tkey, tvalue>::node::right_subtree)->_height : 0;
             _height = std::max(left_height, right_height) + 1;
         }
 
@@ -70,8 +71,12 @@ public:
 
         void update_iterator_data(std::stack<typename binary_search_tree<tkey, tvalue>::node**>& path) override
         {
-            binary_search_tree<tkey, tvalue>::iterator_data::update_iterator_data(path);
-            subtree_height = static_cast<node*>(*(path.top()))->_height;
+            if(!path.empty()) {
+                binary_search_tree<tkey, tvalue>::iterator_data::key = (*(path.top()))->key;
+                binary_search_tree<tkey, tvalue>::iterator_data::value = (*(path.top()))->value;
+                binary_search_tree<tkey, tvalue>::iterator_data::depth = path.size() - 1;
+                subtree_height = static_cast<node *>(*(path.top()))->_height;
+            }
         }
 
         iterator_data* clone_iterator_data() const override
@@ -164,6 +169,8 @@ public:
 
     template<typename universal_tvalue>
     void insert_inside_universal(const tkey& key, universal_tvalue&& val, std::stack<typename binary_search_tree<tkey, tvalue>::node**>& stk);
+
+    tvalue dispose_inside(std::stack<typename binary_search_tree<tkey, tvalue>::node**>& stk) override;
 
 public:
 
@@ -658,18 +665,31 @@ void AVL_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, universal_
 
     static_cast<node*>(*stk.top())->update_height();
 
-    node* baby = static_cast<node*>(*stk.top());
-    node* parent = nullptr;
+//    node* baby = static_cast<node*>(*stk.top());
+//    node* parent = baby;
+
+    node* current_node = static_cast<node*>(*stk.top());
 
     stk.pop();
 
+//    if(!stk.empty())
+//    {
+//        parent = static_cast<node*>(*stk.top());
+//    }
+
+    bool last_up;
+    bool previous_up;
+
     if(!stk.empty())
     {
-        parent = static_cast<node*>(*stk.top());
+        last_up = static_cast<node*>(*(stk.top()))->left_subtree == current_node;
+        previous_up = static_cast<node*>(*(stk.top()))->left_subtree == current_node;
     }
 
     while(!stk.empty())
     {
+
+
         static_cast<node*>(*stk.top())->update_height();
 
         int balance = static_cast<node*>(*stk.top())->get_balance();
@@ -677,7 +697,7 @@ void AVL_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, universal_
         if(balance > 1 || balance < -1)
         {
 
-            if(balance > 1 && static_cast<node*>(*stk.top())->right_subtree == parent && static_cast<node*>(*stk.top())->right_subtree->right_subtree == baby)
+            if(balance > 1 && last_up == previous_up /*static_cast<node*>(*stk.top())->right_subtree == current_node && current_node->right_subtree != nullptr && static_cast<node*>(*stk.top())->right_subtree->right_subtree == current_node->right_subtree*/) //short-circuit evaluation
             {
                 binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
                 static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::left_subtree)->update_height();
@@ -690,7 +710,7 @@ void AVL_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, universal_
                 static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::right_subtree)->update_height();
                 static_cast<node*>((*stk.top()))->update_height();
             }
-            else if(balance < 1 && static_cast<node*>(*stk.top())->right_subtree == parent && static_cast<node*>(*stk.top())->right_subtree->right_subtree == baby)
+            else if(balance < 1 && last_up == previous_up /*static_cast<node*>(*stk.top())->left_subtree == current_node && current_node->left_subtree != nullptr && static_cast<node*>(*stk.top())->left_subtree->left_subtree == current_node->left_subtree*/)
             {
                 binary_search_tree<tkey, tvalue>::small_right_rotation(*stk.top());
                 static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::right_subtree)->update_height();
@@ -706,15 +726,154 @@ void AVL_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, universal_
 
         }
 
-        baby = parent;
-        parent = static_cast<node*>(*stk.top());
+        //baby = parent;
+
+
+        current_node = static_cast<node*>(*stk.top());
+
+
         stk.pop();
+
+//        if(!stk.empty())
+//        {
+//            node* tmp = parent;
+//            parent = static_cast<node*>(*stk.top())->left_subtree == parent ? static_cast<node*>(*stk.top()) : static_cast<node*>(*stk.top())->right_subtree == parent ? static_cast<node*>(*stk.top()) : parent;
+//            baby = parent->left_subtree == baby ? baby : parent->left_subtree == baby ? baby : tmp;
+//
+//        }
+
+        if(!stk.empty())
+        {
+            previous_up = last_up;
+            last_up = static_cast<node*>(*(stk.top()))->left_subtree == current_node;
+        }
+
+
+    }
+
+}
+
+template<typename tkey, typename tvalue>
+tvalue AVL_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_search_tree<tkey, tvalue>::node**> &stk)
+{
+
+    tvalue res = (*stk.top())->value;
+
+    typename binary_search_tree<tkey, tvalue>::node* current_node = *stk.top();
+
+    if(current_node->left_subtree == nullptr && current_node->right_subtree == nullptr)
+    {
+        *stk.top() = nullptr;
+        stk.pop();
+    }
+    else if(current_node->right_subtree == nullptr || current_node->left_subtree == nullptr)
+    {
+        typename binary_search_tree<tkey, tvalue>::node* update_node = current_node->right_subtree != nullptr ? (current_node->right_subtree) : (current_node->left_subtree);
+
+        *stk.top() = update_node;
+
+        //stk.pop();
+    }
+    else
+    {
+        std::queue<typename binary_search_tree<tkey, tvalue>::node**> que;
+
+        typename binary_search_tree<tkey, tvalue>::node** update = &((*stk.top())->left_subtree);
+
+
+        while((*update)->right_subtree != nullptr)
+        {
+            update = &((*update)->right_subtree);
+            que.push(update);
+        }
+
+        typename binary_search_tree<tkey, tvalue>::node* previous_node = *stk.top();
+
+        *(stk.top()) = *update;
+
+        *update = (*update)->left_subtree;
+
+
+        (*stk.top())->left_subtree = previous_node->left_subtree == *(stk.top()) ? *update : previous_node->left_subtree;
+        (*stk.top())->right_subtree = previous_node->right_subtree;
+
+        if(!que.empty())
+        {
+            stk.push(&((*stk.top())->left_subtree));
+        }
+
+        while(!que.empty())
+        {
+            if(que.size() == 1)//crutch
+            {
+                break;
+            }
+
+            stk.push(que.front());
+            que.pop();
+        }
 
     }
 
 
+    allocator::destruct(current_node);
+    allocator_guardant::deallocate_with_guard(current_node);
+
+    while(!stk.empty())
+    {
+        static_cast<node*>(*stk.top())->update_height();
+
+        int balance = static_cast<node*>(*stk.top())->get_balance();
 
 
+
+        if(balance > 1)
+        {
+            balance = static_cast<node*>((*(stk.top()))->right_subtree)->get_balance();
+
+            if(balance >= 0)
+            {
+                binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::left_subtree)->update_height();
+                static_cast<node*>((*stk.top()))->update_height();
+            }
+            else
+            {
+                binary_search_tree<tkey, tvalue>::big_left_rotation(*stk.top());
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::left_subtree)->update_height();
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::right_subtree)->update_height();
+                static_cast<node*>((*stk.top()))->update_height();
+            }
+
+        }
+        else if(balance < -1 )
+        {
+            balance = static_cast<node*>((*(stk.top()))->left_subtree)->get_balance();
+
+            if(balance <= 0)
+            {
+                binary_search_tree<tkey, tvalue>::small_right_rotation(*stk.top());
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::right_subtree)->update_height();
+                static_cast<node*>((*stk.top()))->update_height();
+            }
+            else
+            {
+                binary_search_tree<tkey, tvalue>::big_right_rotation(*stk.top());
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::left_subtree)->update_height();
+                static_cast<node*>((*stk.top())->binary_search_tree<tkey, tvalue>::node::right_subtree)->update_height();
+                static_cast<node*>((*stk.top()))->update_height();
+            }
+
+        }
+
+
+
+        stk.pop();
+    }
+
+
+
+    return res;
 
 }
 
