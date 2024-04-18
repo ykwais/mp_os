@@ -97,7 +97,7 @@ bool infix_iterator_test(
 {
     
     std::string line;
-    auto end_infix = tree.end_infix();
+    auto end_infix = tree.cend_infix();
     auto it = tree.cbegin_infix();
     
     for (auto const &item: expected_result)
@@ -119,7 +119,7 @@ bool prefix_iterator_test(
     std::vector<typename splay_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_prefix = tree.end_prefix();
+    auto end_prefix = tree.cend_prefix();
     auto it = tree.cbegin_prefix();
     
     for (auto const &item: expected_result)
@@ -142,7 +142,7 @@ bool postfix_iterator_test(
 {
     
     std::string line;
-    auto end_postfix = tree.end_postfix();
+    auto end_postfix = tree.cend_postfix();
     auto it = tree.cbegin_postfix();
     
     for (auto const &item: expected_result)
@@ -168,7 +168,7 @@ TEST(splayTreePositiveTests, test1)
     
     logger->trace("splayTreePositiveTests.test1 started");
     
-    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay->insert(5, "a");
     splay->insert(2, "b");
@@ -207,7 +207,7 @@ TEST(splayTreePositiveTests, test2)
     
     logger->trace("splayTreePositiveTests.test2 started");
     
-    search_tree<int, int> *splay = new splay_tree<int, int>(nullptr, logger);
+    search_tree<int, int> *splay = new splay_tree<int, int>(key_comparer(), nullptr, logger);
     
     splay->insert(1, 5);
     splay->insert(2, 12);
@@ -218,9 +218,9 @@ TEST(splayTreePositiveTests, test2)
     std::vector<typename splay_tree<int, int>::iterator_data> expected_result =
         {
             splay_tree<int, int>::iterator_data(0, 4, 45),
-            splay_tree<int, int>::iterator_data(3, 1, 5),
-            splay_tree<int, int>::iterator_data(2, 2, 12),
             splay_tree<int, int>::iterator_data(1, 3, 67),
+            splay_tree<int, int>::iterator_data(2, 2, 12),
+            splay_tree<int, int>::iterator_data(3, 1, 5),
             splay_tree<int, int>::iterator_data(1, 15, 1)
         };
     
@@ -244,7 +244,7 @@ TEST(splayTreePositiveTests, test3)
     
     logger->trace("splayTreePositiveTests.test3 started");
     
-    search_tree<std::string, int> *splay = new splay_tree<std::string, int>(nullptr, logger);
+    search_tree<std::string, int> *splay = new splay_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     splay->insert("a", 1);
     splay->insert("b", 2);
@@ -281,7 +281,7 @@ TEST(splayTreePositiveTests, test4)
     
     logger->trace("splayTreePositiveTests.test4 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -322,7 +322,7 @@ TEST(splayTreePositiveTests, test5)
     
     logger->trace("splayTreePositiveTests.test5 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -363,7 +363,7 @@ TEST(splayTreePositiveTests, test6)
     
     logger->trace("splayTreePositiveTests.test6 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -403,7 +403,7 @@ TEST(splayTreePositiveTests, test7)
     
     logger->trace("splayTreePositiveTests.test7 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -447,7 +447,7 @@ TEST(splayTreePositiveTests, test8)
     
     logger->trace("splayTreePositiveTests.test8 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -492,7 +492,7 @@ TEST(splayTreePositiveTests, test9)
     
     logger->trace("splayTreePositiveTests.test9 started");
     
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "l");
     splay1->insert(8, "c");
@@ -539,7 +539,7 @@ TEST(splayTreePositiveTests, test10)
     
     logger->trace("splayTreePositiveTests.test10 started");
     
-    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay->insert(6, "l");
     splay->insert(8, "c");
