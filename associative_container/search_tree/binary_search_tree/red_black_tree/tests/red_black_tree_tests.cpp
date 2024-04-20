@@ -103,7 +103,7 @@ bool infix_iterator_test(
     for (auto const &item: expected_result)
     {
         if ((*it)->depth != item.depth || (*it)->key != item.key || (*it)->value != item.value ||
-            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->color != item.color)
+            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->_color != item._color)
         {
             return false;
         }
@@ -120,13 +120,13 @@ bool prefix_iterator_test(
     std::vector<typename red_black_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
-    auto end_prefix = tree.end_prefix();
+    auto end_prefix = tree.cend_prefix();
     auto it = tree.cbegin_prefix();
     
     for (auto const &item: expected_result)
     {
         if ((*it)->depth != item.depth || (*it)->key != item.key || (*it)->value != item.value ||
-            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->color != item.color)
+            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->_color != item._color)
         {
             return false;
         }
@@ -145,14 +145,14 @@ bool postfix_iterator_test(
 {
     
     std::string line;
-    auto end_postfix = tree.end_postfix();
+    auto end_postfix = tree.cend_postfix();
     auto it = tree.cbegin_postfix();
     
     for (
         auto const &item: expected_result)
     {
         if ((*it)->depth != item.depth || (*it)->key != item.key || (*it)->value != item.value ||
-            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->color != item.color)
+            reinterpret_cast<typename red_black_tree<tkey, tvalue>::iterator_data const *>(*it)->_color != item._color)
         {
             return false;
         }
@@ -173,7 +173,7 @@ TEST(redBlackTreePositiveTests, test1)
     
     logger->trace("redBlackTreePositiveTests.test1 started");
     
-    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb->insert(5, "a");
     rb->insert(2, "b");
@@ -212,7 +212,7 @@ TEST(redBlackTreePositiveTests, test2)
     
     logger->trace("redBlackTreePositiveTests.test2 started");
     
-    search_tree<int, int> *rb = new red_black_tree<int, int>(nullptr, logger);
+    search_tree<int, int> *rb = new red_black_tree<int, int>(key_comparer(), nullptr, logger);
     
     rb->insert(1, 5);
     rb->insert(2, 12);
@@ -232,7 +232,39 @@ TEST(redBlackTreePositiveTests, test2)
     EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<red_black_tree<int, int> *>(rb), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test2 finished");
-    
+
+    rb->insert(34, 45);
+    rb->insert(123, 45);
+    rb->insert(10, 45);
+    rb->insert(56, 45);
+    rb->insert(100, 45);
+    rb->insert(7, 45);
+    rb->insert(45, 45);
+    rb->insert(78, 45);
+    rb->insert(125, 45);
+    rb->insert(98, 45);
+    rb->insert(13, 45);
+    rb->insert(36, 45);
+    rb->insert(12, 45);
+    rb->insert(55, 45);
+    rb->insert(33, 45);
+    rb->insert(44, 45);
+    rb->insert(66, 45);
+    rb->insert(77, 45);
+    rb->insert(11, 45);
+    rb->insert(22, 45);
+    rb->insert(88, 45);
+    rb->insert(99, 45);
+    rb->insert(111, 45);
+    rb->insert(101, 45);
+    rb->insert(6, 45);
+    rb->insert(67, 45);
+    rb->insert(145, 45);
+    rb->insert(24, 45);
+    rb->insert(69, 45);
+    rb->insert(19, 45);
+    rb->insert(49, 45);
+
     delete rb;
     delete logger;
 }
@@ -249,7 +281,7 @@ TEST(redBlackTreePositiveTests, test3)
     
     logger->trace("redBlackTreePositiveTests.test3 started");
     
-    search_tree<std::string, int> *rb = new red_black_tree<std::string, int>(nullptr, logger);
+    search_tree<std::string, int> *rb = new red_black_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     rb->insert("a", 1);
     rb->insert("b", 2);
@@ -286,7 +318,7 @@ TEST(redBlackTreePositiveTests, test4)
     
     logger->trace("redBlackTreePositiveTests.test4 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -328,7 +360,7 @@ TEST(redBlackTreePositiveTests, test5)
     
     logger->trace("redBlackTreePositiveTests.test5 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -369,7 +401,7 @@ TEST(redBlackTreePositiveTests, test6)
     
     logger->trace("redBlackTreePositiveTests.test6 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -409,7 +441,7 @@ TEST(redBlackTreePositiveTests, test7)
     
     logger->trace("redBlackTreePositiveTests.test7 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -452,7 +484,7 @@ TEST(redBlackTreePositiveTests, test8)
     
     logger->trace("redBlackTreePositiveTests.test8 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -496,7 +528,7 @@ TEST(redBlackTreePositiveTests, test9)
     
     logger->trace("redBlackTreePositiveTests.test9 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -541,7 +573,7 @@ TEST(redBlackTreePositiveTests, test10)
     
     logger->trace("redBlackTreePositiveTests.test10 started");
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "l");
     rb1->insert(8, "c");
@@ -588,7 +620,7 @@ TEST(redBlackTreePositiveTests, test11)
     
     logger->trace("redBlackTreePositiveTests.test11 started");
     
-    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(nullptr, logger);
+    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb->insert(6, "l");
     rb->insert(8, "c");

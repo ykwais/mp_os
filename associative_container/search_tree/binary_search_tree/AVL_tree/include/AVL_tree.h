@@ -161,7 +161,7 @@ public:
     AVL_tree<tkey, tvalue> &operator=(
         AVL_tree<tkey, tvalue> &&other) noexcept = default;
 
-public:
+private:
 
     void insert_inside(const tkey& key, const tvalue& value, std::stack<typename binary_search_tree<tkey, tvalue>::node**>& stk) override;
 
@@ -827,7 +827,7 @@ tvalue AVL_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_search_
 
 
 
-        if(balance > 1)
+        if(balance == 2)
         {
             balance = static_cast<node*>((*(stk.top()))->right_subtree)->get_balance();
 

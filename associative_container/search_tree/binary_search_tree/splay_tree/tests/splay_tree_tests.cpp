@@ -3,6 +3,10 @@
 #include <associative_container.h>
 #include <logger_builder.h>
 #include <client_logger_builder.h>
+#include <allocator_sorted_list.h>
+#include <allocator_boundary_tags.h>
+#include <allocator_global_heap.h>
+#include <allocator_buddies_system.h>
 #include <iostream>
 
 logger *create_logger(
@@ -92,7 +96,7 @@ template<
     typename tkey,
     typename tvalue>
 bool infix_iterator_test(
-    splay_tree<tkey, tvalue> const &tree,
+    splay_tree<tkey, tvalue> &tree,
     std::vector<typename splay_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     
@@ -115,7 +119,7 @@ template<
     typename tkey,
     typename tvalue>
 bool prefix_iterator_test(
-    splay_tree<tkey, tvalue> const &tree,
+    splay_tree<tkey, tvalue> &tree,
     std::vector<typename splay_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     std::string line;
@@ -137,7 +141,7 @@ template<
     typename tkey,
     typename tvalue>
 bool postfix_iterator_test(
-    splay_tree<tkey, tvalue> const &tree,
+    splay_tree<tkey, tvalue> &tree,
     std::vector<typename splay_tree<tkey, tvalue>::iterator_data> &expected_result)
 {
     
@@ -167,8 +171,18 @@ TEST(splayTreePositiveTests, test1)
         });
     
     logger->trace("splayTreePositiveTests.test1 started");
-    
-    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay->insert(5, "a");
     splay->insert(2, "b");
@@ -187,11 +201,11 @@ TEST(splayTreePositiveTests, test1)
             splay_tree<int, std::string>::iterator_data(2, 15, "c")
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay.get()), expected_result));
     
     logger->trace("splayTreePositiveTests.test1 finished");
     
-    delete splay;
+    //delete splay;
     delete logger;
 }
 
@@ -206,8 +220,18 @@ TEST(splayTreePositiveTests, test2)
         });
     
     logger->trace("splayTreePositiveTests.test2 started");
-    
-    search_tree<int, int> *splay = new splay_tree<int, int>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay = std::make_unique<splay_tree<int, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, int> *splay = new splay_tree<int, int>(key_comparer(), nullptr, logger);
     
     splay->insert(1, 5);
     splay->insert(2, 12);
@@ -224,11 +248,11 @@ TEST(splayTreePositiveTests, test2)
             splay_tree<int, int>::iterator_data(1, 15, 1)
         };
     
-    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<splay_tree<int, int> *>(splay), expected_result));
+    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<splay_tree<int, int> *>(splay.get()), expected_result));
     
     logger->trace("splayTreePositiveTests.test2 finished");
     
-    delete splay;
+    //delete splay;
     delete logger;
 }
 
@@ -243,8 +267,18 @@ TEST(splayTreePositiveTests, test3)
         });
     
     logger->trace("splayTreePositiveTests.test3 started");
-    
-    search_tree<std::string, int> *splay = new splay_tree<std::string, int>(key_comparer(), nullptr, logger);
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay = std::make_unique<splay_tree<std::string, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay = std::make_unique<splay_tree<std::string, int>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<std::string, int> *splay = new splay_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     splay->insert("a", 1);
     splay->insert("b", 2);
@@ -261,11 +295,11 @@ TEST(splayTreePositiveTests, test3)
             splay_tree<std::string, int>::iterator_data(0, "e", 4)
         };
     
-    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<splay_tree<std::string, int> *>(splay), expected_result));
+    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<splay_tree<std::string, int> *>(splay.get()), expected_result));
     
     logger->trace("splayTreePositiveTests.test3 finished");
     
-    delete splay;
+    //delete splay;
     delete logger;
 }
 
@@ -280,8 +314,18 @@ TEST(splayTreePositiveTests, test4)
         });
     
     logger->trace("splayTreePositiveTests.test4 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -300,13 +344,13 @@ TEST(splayTreePositiveTests, test4)
             splay_tree<int, std::string>::iterator_data(2, 15, "x")
         };
     
-    splay_tree<int, std::string> splay2(std::move(*reinterpret_cast<splay_tree<int, std::string> *>(splay1)));
+    splay_tree<int, std::string> splay2(std::move(*reinterpret_cast<splay_tree<int, std::string> *>(splay1.get())));
     
     EXPECT_TRUE(infix_iterator_test(splay2, expected_result));
     
     logger->trace("splayTreePositiveTests.test4 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
 }
 
@@ -321,8 +365,18 @@ TEST(splayTreePositiveTests, test5)
         });
     
     logger->trace("splayTreePositiveTests.test5 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -341,13 +395,13 @@ TEST(splayTreePositiveTests, test5)
             splay_tree<int, std::string>::iterator_data(2, 15, "x")
         };
     
-    splay_tree<int, std::string> splay2 = std::move(*reinterpret_cast<splay_tree<int, std::string> *>(splay1));
+    splay_tree<int, std::string> splay2 = std::move(*reinterpret_cast<splay_tree<int, std::string> *>(splay1.get()));
     
     EXPECT_TRUE(infix_iterator_test(splay2, expected_result));
     
     logger->trace("splayTreePositiveTests.test5 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
 }
 
@@ -362,8 +416,18 @@ TEST(splayTreePositiveTests, test6)
         });
     
     logger->trace("splayTreePositiveTests.test6 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -383,11 +447,11 @@ TEST(splayTreePositiveTests, test6)
             splay_tree<int, std::string>::iterator_data(2, 15, "x"),
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1.get()), expected_result));
     
     logger->trace("splayTreePositiveTests.test6 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
 }
 
@@ -402,8 +466,18 @@ TEST(splayTreePositiveTests, test7)
         });
     
     logger->trace("splayTreePositiveTests.test7 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -425,12 +499,12 @@ TEST(splayTreePositiveTests, test7)
             splay_tree<int, std::string>::iterator_data(3, 15, "x")
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1),
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1.get()),
         expected_result));
     
     logger->trace("splayTreePositiveTests.test7 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
     
 }
@@ -446,8 +520,18 @@ TEST(splayTreePositiveTests, test8)
         });
     
     logger->trace("splayTreePositiveTests.test8 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "a");
     splay1->insert(8, "c");
@@ -471,11 +555,11 @@ TEST(splayTreePositiveTests, test8)
             splay_tree<int, std::string>::iterator_data(3, 19, "i"),
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<splay_tree<int, std::string> *>(splay1.get()), expected_result));
     
     logger->trace("splayTreePositiveTests.test8 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
     
 }
@@ -491,8 +575,18 @@ TEST(splayTreePositiveTests, test9)
         });
     
     logger->trace("splayTreePositiveTests.test9 started");
-    
-    search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay1 = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay1 = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay1 = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay1->insert(6, "l");
     splay1->insert(8, "c");
@@ -522,7 +616,7 @@ TEST(splayTreePositiveTests, test9)
     
     logger->trace("splayTreePositiveTests.test9 finished");
     
-    delete splay1;
+    //delete splay1;
     delete logger;
     
 }
@@ -538,8 +632,18 @@ TEST(splayTreePositiveTests, test10)
         });
     
     logger->trace("splayTreePositiveTests.test10 started");
-    
-    search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto splay = std::make_unique<splay_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto splay = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *splay = new splay_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     splay->insert(6, "l");
     splay->insert(8, "c");
@@ -565,7 +669,7 @@ TEST(splayTreePositiveTests, test10)
     
     logger->trace("splayTreePositiveTests.test10 finished");
     
-    delete splay;
+    //delete splay;
     delete logger;
 }
 

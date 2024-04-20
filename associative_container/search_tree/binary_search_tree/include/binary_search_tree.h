@@ -297,6 +297,11 @@ public:
 
         virtual ~infix_iterator() = default;
 
+        node** get_node()
+        {
+            return _path.top();
+        }
+
     
     public:
         
