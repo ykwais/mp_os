@@ -2,6 +2,7 @@
 #define MATH_PRACTICE_AND_OPERATING_SYSTEMS_RED_BLACK_TREE_H
 
 #include <binary_search_tree.h>
+#include <queue>
 
 template<
     typename tkey,
@@ -780,17 +781,327 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
     typename binary_search_tree<tkey, tvalue>::node* current_node = *stk.top();
 
-    if(static_cast<node*>(current_node)->_color == node_color::RED && current_node->left_subtree == nullptr && current_node->right_subtree == nullptr)
+    bool need_delete = true;
+
+    while(!stk.empty())
     {
-        *stk.top() = nullptr;
-        stk.pop();
+        // region red
+        if(static_cast<node*>(*stk.top())->_color == node_color::RED)
+        {
+            if((*stk.top())->left_subtree == nullptr && (*stk.top())->right_subtree == nullptr)
+            {
+
+                current_node = *stk.top();
+                stk.pop();
+                if((*stk.top())->left_subtree == current_node)
+                {
+                    (*stk.top())->left_subtree = nullptr;
+                }
+                else
+                {
+                    (*stk.top())->right_subtree = nullptr;
+                }
+                if(need_delete) {
+                    allocator::destruct(current_node);
+                    allocator_guardant::deallocate_with_guard(current_node);
+                }
+                need_delete = false;
+                break;
+            }
+
+            if((*stk.top())->right_subtree != nullptr && (*stk.top())->left_subtree != nullptr)
+            {
+                std::queue<typename binary_search_tree<tkey, tvalue>::node**> que;
+
+                typename binary_search_tree<tkey, tvalue>::node** update = &((*stk.top())->left_subtree);
+
+
+                while((*update)->right_subtree != nullptr)
+                {
+                    update = &((*update)->right_subtree);
+                    que.push(update);
+                }
+
+                node_color removable_color = static_cast<node*>(*update)->_color;
+
+                typename binary_search_tree<tkey, tvalue>::node* previous_node = *stk.top();
+
+                *(stk.top()) = *update;
+
+                static_cast<node*>(*stk.top())->_color = node_color::RED;
+
+                typename binary_search_tree<tkey, tvalue>::node* leftist = (*update)->left_subtree;
+
+                //*update = (*update)->left_subtree;
+                *update = previous_node;
+                static_cast<node*>(*update)->update_color(removable_color);
+
+                (*stk.top())->left_subtree = previous_node->left_subtree == *(stk.top()) ? *update : previous_node->left_subtree;
+                (*stk.top())->right_subtree = previous_node->right_subtree;
+
+                (*update)->right_subtree = nullptr;
+                (*update)->left_subtree = leftist;
+
+                if(!que.empty())
+                {
+                    stk.push(&((*stk.top())->left_subtree));
+                }
+
+                while(!que.empty())
+                {
+//                    if(que.size() == 1)//crutch
+//                    {
+//                        break;
+//                    }
+
+                    stk.push(que.front());
+                    que.pop();
+                }
+
+                //current_node = *stk.top();
+                continue;
+            }
+        }
+
+            // endregion red
+
+        else if(static_cast<node*>(*stk.top())->_color == node_color::BLACK) {
+            if ((*stk.top())->left_subtree != nullptr && (*stk.top())->right_subtree != nullptr) {
+                std::queue<typename binary_search_tree<tkey, tvalue>::node **> que;
+
+                typename binary_search_tree<tkey, tvalue>::node **update = &((*stk.top())->left_subtree);
+
+
+                while ((*update)->right_subtree != nullptr) {
+                    update = &((*update)->right_subtree);
+                    que.push(update);
+                }
+
+                node_color removable_color = static_cast<node *>(*update)->_color;
+
+                typename binary_search_tree<tkey, tvalue>::node *previous_node = *stk.top();
+
+                *(stk.top()) = *update;
+
+                static_cast<node *>(*stk.top())->_color = node_color::BLACK;
+
+                typename binary_search_tree<tkey, tvalue>::node *leftist = (*update)->left_subtree;
+
+                //*update = (*update)->left_subtree;
+                *update = previous_node;
+                static_cast<node *>(*update)->update_color(removable_color);
+
+                (*stk.top())->left_subtree =
+                        previous_node->left_subtree == *(stk.top()) ? *update : previous_node->left_subtree;
+                (*stk.top())->right_subtree = previous_node->right_subtree;
+
+                (*update)->right_subtree = nullptr;
+                (*update)->left_subtree = leftist;
+
+                if (!que.empty()) {
+                    stk.push(&((*stk.top())->left_subtree));
+                }
+
+                while (!que.empty()) {
+//                    if(que.size() == 1)//crutch
+//                    {
+//                        break;
+//                    }
+
+                    stk.push(que.front());
+                    que.pop();
+                }
+
+                //current_node = *stk.top();
+                continue;
+            } else if ((*stk.top())->left_subtree != nullptr || (*stk.top())->right_subtree != nullptr) {
+                if ((*stk.top())->left_subtree != nullptr && (*stk.top())->right_subtree == nullptr) {
+                    typename binary_search_tree<tkey, tvalue>::node **update = &((*stk.top())->left_subtree);
+
+                    typename binary_search_tree<tkey, tvalue>::node *previous_node = *stk.top();
+
+                    *(stk.top()) = *update;
+
+                    static_cast<node *>(*stk.top())->_color = node_color::BLACK;
+
+                    typename binary_search_tree<tkey, tvalue>::node *leftist = (*update)->left_subtree;
+                    typename binary_search_tree<tkey, tvalue>::node *rightist = (*update)->right_subtree;
+
+                    *update = previous_node;
+                    static_cast<node *>(*update)->update_color(node_color::RED);
+
+                    (*stk.top())->left_subtree = *update;
+                    (*stk.top())->right_subtree = nullptr;
+
+                    ((*stk.top())->left_subtree)->right_subtree = rightist;
+                    ((*stk.top())->left_subtree)->left_subtree = leftist;
+
+                    stk.push(&((*stk.top())->left_subtree));
+
+                    continue;
+                    //current_node = *stk.top();
+                } else if ((*stk.top())->right_subtree != nullptr && (*stk.top())->left_subtree == nullptr) {
+                    typename binary_search_tree<tkey, tvalue>::node **update = &((*stk.top())->right_subtree);
+
+                    typename binary_search_tree<tkey, tvalue>::node *previous_node = *stk.top();
+
+                    *(stk.top()) = *update;
+
+                    static_cast<node *>(*stk.top())->_color = node_color::BLACK;
+
+                    typename binary_search_tree<tkey, tvalue>::node *leftist = (*update)->left_subtree;
+                    typename binary_search_tree<tkey, tvalue>::node *rightist = (*update)->right_subtree;
+
+                    *update = previous_node;
+                    static_cast<node *>(*update)->update_color(node_color::RED);
+
+                    (*stk.top())->right_subtree = *update;
+                    (*stk.top())->left_subtree = nullptr;
+
+                    ((*stk.top())->right_subtree)->right_subtree = rightist;
+                    ((*stk.top())->right_subtree)->left_subtree = leftist;
+
+                    stk.push(&((*stk.top())->right_subtree));
+
+                    continue;
+
+                    //current_node = *stk.top();
+                }
+            }
+            else if ((*stk.top())->left_subtree == nullptr && (*stk.top())->right_subtree == nullptr)
+            {
+                while (static_cast<node *>(*stk.top())->_color == node_color::BLACK && stk.size() > 1) {
+                    typename binary_search_tree<tkey, tvalue>::node *current = *stk.top();
+
+                    stk.pop();
+
+                    //bool up;
+                    typename binary_search_tree<tkey, tvalue>::node *parent;
+                    typename binary_search_tree<tkey, tvalue>::node *brother;
+
+                    if (!stk.empty()) {
+                        //up = (*stk.top())->left_subtree == current;
+                        parent = *stk.top();
+                    } else {
+                        break;///////////////////////////////временно need to delete
+                    }
+
+                    if (parent->left_subtree == current) {
+
+                        if (static_cast<node *>(parent->right_subtree)->_color == node_color::RED) {
+                            binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
+                            static_cast<node *>(*stk.top())->update_color(node_color::BLACK);
+                            static_cast<node *>((*stk.top())->left_subtree)->update_color(node_color::RED);
+                            stk.push(&((*stk.top())->left_subtree));
+                            typename binary_search_tree<tkey, tvalue>::node* removable = (*stk.top())->left_subtree;
+                            stk.push(&(removable));
+                            continue;
+                        } else if (static_cast<node *>(parent->right_subtree)->_color == node_color::BLACK) {
+//                            current_node = *stk.top();
+//                            stk.pop();
+                            if ((*stk.top())->left_subtree == current) {
+                                (*stk.top())->left_subtree = nullptr;
+                            } else {
+                                (*stk.top())->right_subtree = nullptr;
+                            }
+                            if (need_delete) {
+                                allocator::destruct(current);
+                                allocator_guardant::deallocate_with_guard(current);
+                            }
+                            need_delete = false;
+
+                            brother = parent->right_subtree;
+
+                            if ((brother->right_subtree == nullptr && brother->left_subtree == nullptr) ||
+                                (static_cast<node *>(brother->right_subtree)->_color == node_color::BLACK &&
+                                 static_cast<node *>(brother->left_subtree)->_color == node_color::BLACK)) {
+                                static_cast<node *>(brother)->update_color(node_color::RED);
+                                node_color color_of_parent = static_cast<node *>(parent)->_color;
+                                static_cast<node *>(parent)->update_color(node_color::BLACK);
+                                if (color_of_parent == node_color::BLACK) {
+                                    stk.pop();
+                                    continue;
+                                } else {
+                                    break;
+                                }
+                            } else if (static_cast<node *>(brother->right_subtree)->_color == node_color::RED) {
+                                node_color parent_color = static_cast<node *>(parent)->_color;
+                                binary_search_tree<tkey, tvalue>::small_left_rotation(parent);
+                                static_cast<node *>(parent->left_subtree)->update_color(parent_color);
+                                static_cast<node *>(parent->right_subtree)->update_color(node_color::BLACK);
+                                break;
+                            } else if (static_cast<node *>(brother->left_subtree)->_color == node_color::RED &&
+                                       (static_cast<node *>(brother->right_subtree)->_color == node_color::BLACK ||
+                                        brother->right_subtree == nullptr)) {
+                                binary_search_tree<tkey, tvalue>::small_right_rotation(brother);
+                                static_cast<node *>(brother)->update_color(node_color::BLACK);
+                                static_cast<node *>(brother->right_subtree)->update_color(node_color::RED);
+                                stk.push(&(parent->left_subtree));
+                                continue;
+                            }
+
+
+                        }
+
+                    } else if (parent->right_subtree == current) {
+                        if (static_cast<node *>(parent->left_subtree)->_color == node_color::RED) {
+                            binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
+                            static_cast<node *>(*stk.top())->update_color(node_color::BLACK);
+                            static_cast<node *>((*stk.top())->right_subtree)->update_color(node_color::RED);
+                            stk.push(&((*stk.top())->right_subtree));
+                            continue;
+                        } else if (static_cast<node *>(parent->left_subtree)->_color == node_color::BLACK) {
+                            //деаллокация здесь need_delete = false;!!!!
+                            brother = parent->left_subtree;
+
+                            if ((brother->right_subtree == nullptr && brother->left_subtree == nullptr) ||
+                                (static_cast<node *>(brother->right_subtree)->_color == node_color::BLACK &&
+                                 static_cast<node *>(brother->left_subtree)->_color == node_color::BLACK)) {
+                                static_cast<node *>(brother)->update_color(node_color::RED);
+                                node_color color_of_parent = static_cast<node *>(parent)->_color;
+                                static_cast<node *>(parent)->update_color(node_color::BLACK);
+                                if (color_of_parent == node_color::BLACK) {
+                                    stk.pop();
+                                    continue;
+                                } else {
+                                    break;
+                                }
+                            } else if (static_cast<node *>(brother->left_subtree)->_color == node_color::RED) {
+                                node_color parent_color = static_cast<node *>(parent)->_color;
+                                binary_search_tree<tkey, tvalue>::small_right_rotation(parent);
+                                static_cast<node *>(parent->right_subtree)->update_color(parent_color);
+                                static_cast<node *>(parent->left_subtree)->update_color(node_color::BLACK);
+                                break;
+                            } else if (static_cast<node *>(brother->right_subtree)->_color == node_color::RED &&
+                                       (static_cast<node *>(brother->left_subtree)->_color == node_color::BLACK ||
+                                        brother->left_subtree == nullptr)) {
+                                binary_search_tree<tkey, tvalue>::small_left_rotation(brother);
+                                static_cast<node *>(brother)->update_color(node_color::BLACK);
+                                static_cast<node *>(brother->left_subtree)->update_color(node_color::RED);
+                                stk.push(&(parent->right_subtree));
+                                continue;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
 
 
-    allocator::destruct(current_node);
-    allocator_guardant::deallocate_with_guard(current_node);
 
+//    if(static_cast<node*>(current_node)->_color == node_color::RED && current_node->left_subtree == nullptr && current_node->right_subtree == nullptr)
+//    {
+//        *stk.top() = nullptr;
+//        stk.pop();
+//    }
 
+    //allocator::destruct(current_node);
+    //allocator_guardant::deallocate_with_guard(current_node);
 
 
     return res;

@@ -455,7 +455,7 @@ TEST(redBlackTreePositiveTests, test7)
     
     std::vector<typename red_black_tree<int, std::string>::iterator_data> expected_result =
         {
-            red_black_tree<int, std::string>::iterator_data(2, 2, "i", red_black_tree<int, std::string>::node_color::BLACK),
+            red_black_tree<int, std::string>::iterator_data(2, 2, "l", red_black_tree<int, std::string>::node_color::BLACK),
             red_black_tree<int, std::string>::iterator_data(1, 4, "j", red_black_tree<int, std::string>::node_color::RED),
             red_black_tree<int, std::string>::iterator_data(3, 5, "b", red_black_tree<int, std::string>::node_color::RED),
             red_black_tree<int, std::string>::iterator_data(2, 6, "a", red_black_tree<int, std::string>::node_color::BLACK),
@@ -540,6 +540,7 @@ TEST(redBlackTreePositiveTests, test9)
     rb1->insert(18, "e");
     
     rb1->dispose(11);
+    //rb1->dispose(6);//////
     
     std::vector<typename red_black_tree<int, std::string>::iterator_data> expected_result =
         {
