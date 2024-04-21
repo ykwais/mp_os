@@ -4,6 +4,7 @@
 #include <logger_builder.h>
 #include <client_logger_builder.h>
 #include <iostream>
+#include <map>
 
 logger *create_logger(
     std::vector<std::pair<std::string, logger::severity>> const &output_file_streams_setup,
@@ -540,7 +541,7 @@ TEST(redBlackTreePositiveTests, test9)
     rb1->insert(18, "e");
     
     rb1->dispose(11);
-    //rb1->dispose(6);//////
+
     
     std::vector<typename red_black_tree<int, std::string>::iterator_data> expected_result =
         {
@@ -618,9 +619,9 @@ TEST(redBlackTreePositiveTests, test11)
                 logger::severity::trace
             }
         });
-    
+
     logger->trace("redBlackTreePositiveTests.test11 started");
-    
+
     search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb->insert(6, "l");
@@ -650,6 +651,166 @@ TEST(redBlackTreePositiveTests, test11)
     delete rb;
     delete logger;
 }
+
+TEST(own, test1)
+{
+
+    logger *logger = create_logger(std::vector<std::pair<std::string, logger::severity>>
+                                           {
+                                                   {
+                                                           "red_black_tree_tests_logs.txt",
+                                                           logger::severity::trace
+                                                   }
+                                           });
+
+    logger->trace("redBlackTreePositiveTests.test11 started");
+
+    search_tree<int, int> *rb = new red_black_tree<int, int>(key_comparer(), nullptr, logger);
+
+//    rb1->insert(6, "a");
+//    rb1->insert(8, "c");
+//    rb1->insert(15, "x");
+//    rb1->insert(11, "j");
+//    rb1->insert(19, "i");
+//    rb1->insert(12, "l");
+//    rb1->insert(17, "b");
+//    rb1->insert(18, "e");
+//
+////    rb1->dispose(12);
+////    rb1->dispose(11);
+//
+//    rb1->dispose(12);
+//    rb1->dispose(19);
+//    rb1->dispose(11);
+
+//    rb->insert(1, 5);
+//    rb->insert(2, 12);
+//    rb->insert(15, 1);
+//    rb->insert(3, 67);
+//    rb->insert(4, 45);
+//
+//    rb->insert(34, 45);
+//    rb->insert(123, 45);
+//    rb->insert(10, 45);
+//    rb->insert(56, 45);
+//    rb->insert(100, 45);
+//    rb->insert(7, 45);
+//    rb->insert(45, 45);
+//    rb->insert(78, 45);
+//    rb->insert(125, 45);
+//    rb->insert(98, 45);
+//    rb->insert(13, 45);
+//    rb->insert(36, 45);
+//    rb->insert(12, 45);
+//    rb->insert(55, 45);
+//    rb->insert(33, 45);
+//    rb->insert(44, 45);
+//    rb->insert(66, 45);
+//    rb->insert(77, 45);
+//    rb->insert(11, 45);
+//    rb->insert(22, 45);
+//    rb->insert(88, 45);
+//    rb->insert(99, 45);
+//    rb->insert(111, 45);
+//    rb->insert(101, 45);
+//    rb->insert(6, 45);
+//    rb->insert(67, 45);
+//    rb->insert(145, 45);
+//    rb->insert(24, 45);
+//    rb->insert(69, 45);
+//    rb->insert(19, 45);
+//    rb->insert(49, 45);
+//
+//    rb->dispose(3);
+
+
+//    rb->insert(135, 1);
+//    rb->insert(106, 1);
+//    rb->insert(245, 1);
+//    rb->insert(54, 1);
+//    rb->insert(188, 1);
+//    rb->insert(282, 1);
+//    rb->insert(222, 1);
+//
+//    rb->dispose(245);
+//    rb->dispose(188);
+
+
+    rb->insert(290, 1);
+    rb->insert(241, 1);
+    rb->insert(297, 1);
+    rb->insert(236, 1);
+
+    rb->dispose(236);
+    rb->dispose(297);
+
+
+
+
+
+}
+
+TEST(own, test2)
+{
+    red_black_tree<int, int> tree{key_comparer()};
+    std::map<int, int> map;
+
+    size_t iterations = 100'000;
+
+    srand(time(nullptr));
+
+    for(size_t i = 0; i < iterations; ++i)
+    {
+        switch(rand() % 3)
+        {
+            case 0:
+            case 1:
+            {
+                int tmp = rand();
+                try
+                {
+
+                    if (map.find(tmp) == map.end())
+                    {
+                        map.insert(std::make_pair(tmp, 1));
+                        tree.insert(tmp, 1);
+                    }
+                } catch (std::logic_error& er)
+                {
+                    std::cout << er.what() << std::endl;
+                }
+                break;
+            }
+            case 2:
+            {
+                if (!map.empty())
+                {
+                    auto it = map.begin();
+
+                    std::advance(it, rand() % map.size());
+
+                    tree.dispose(it->first);
+                    map.erase(it);
+                } else
+                {
+                    std::cout << "Empty" << std::endl;
+                }
+            }
+                break;
+        }
+    }
+
+    while(!map.empty())
+    {
+        auto it = map.begin();
+        std::advance(it, rand() % map.size());
+
+        tree.dispose(it->first);
+        map.erase(it);
+    }
+
+}
+
 
 int main(
     int argc,
