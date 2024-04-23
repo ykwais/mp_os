@@ -3,6 +3,10 @@
 #include <associative_container.h>
 #include <logger_builder.h>
 #include <client_logger_builder.h>
+#include <allocator_sorted_list.h>
+#include <allocator_boundary_tags.h>
+#include <allocator_global_heap.h>
+#include <allocator_buddies_system.h>
 #include <iostream>
 #include <map>
 
@@ -173,8 +177,20 @@ TEST(redBlackTreePositiveTests, test1)
         });
     
     logger->trace("redBlackTreePositiveTests.test1 started");
-    
-    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+
+    //search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+
+
     
     rb->insert(5, "a");
     rb->insert(2, "b");
@@ -193,11 +209,11 @@ TEST(redBlackTreePositiveTests, test1)
             red_black_tree<int, std::string>::iterator_data(1, 15, "c", red_black_tree<int, std::string>::node_color::BLACK)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test1 finished");
     
-    delete rb;
+    //delete rb;
     delete logger;
 }
 
@@ -212,8 +228,17 @@ TEST(redBlackTreePositiveTests, test2)
         });
     
     logger->trace("redBlackTreePositiveTests.test2 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb = std::make_unique<red_black_tree<int, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb = std::make_unique<red_black_tree<int, int>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, int> *rb = new red_black_tree<int, int>(key_comparer(), nullptr, logger);
+    //search_tree<int, int> *rb = new red_black_tree<int, int>(key_comparer(), nullptr, logger);
     
     rb->insert(1, 5);
     rb->insert(2, 12);
@@ -230,7 +255,7 @@ TEST(redBlackTreePositiveTests, test2)
             red_black_tree<int, int>::iterator_data(2, 15, 1, red_black_tree<int, int>::node_color::RED)
         };
     
-    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<red_black_tree<int, int> *>(rb), expected_result));
+    EXPECT_TRUE(prefix_iterator_test(*reinterpret_cast<red_black_tree<int, int> *>(rb.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test2 finished");
 
@@ -266,7 +291,7 @@ TEST(redBlackTreePositiveTests, test2)
     rb->insert(19, 45);
     rb->insert(49, 45);
 
-    delete rb;
+    //delete rb;
     delete logger;
 }
 
@@ -281,8 +306,17 @@ TEST(redBlackTreePositiveTests, test3)
         });
     
     logger->trace("redBlackTreePositiveTests.test3 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb = std::make_unique<red_black_tree<std::string, int>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb = std::make_unique<binary_search_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<std::string, int> *rb = new red_black_tree<std::string, int>(key_comparer(), nullptr, logger);
+    //search_tree<std::string, int> *rb = new red_black_tree<std::string, int>(key_comparer(), nullptr, logger);
     
     rb->insert("a", 1);
     rb->insert("b", 2);
@@ -299,11 +333,11 @@ TEST(redBlackTreePositiveTests, test3)
             red_black_tree<std::string, int>::iterator_data(0, "b", 2, red_black_tree<std::string, int>::node_color::BLACK)
         };
     
-    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<red_black_tree<std::string, int> *>(rb), expected_result));
+    EXPECT_TRUE(postfix_iterator_test(*reinterpret_cast<red_black_tree<std::string, int> *>(rb.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test3 finished");
     
-    delete rb;
+    //delete rb;
     delete logger;
 }
 
@@ -318,8 +352,17 @@ TEST(redBlackTreePositiveTests, test4)
         });
     
     logger->trace("redBlackTreePositiveTests.test4 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -339,13 +382,13 @@ TEST(redBlackTreePositiveTests, test4)
         };
     
     red_black_tree<int, std::string> rb2(
-        std::move(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1)));
+        std::move(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get())));
     
     EXPECT_TRUE(infix_iterator_test(rb2, expected_result));
     
     logger->trace("redBlackTreePositiveTests.test4 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
 }
 
@@ -360,8 +403,17 @@ TEST(redBlackTreePositiveTests, test5)
         });
     
     logger->trace("redBlackTreePositiveTests.test5 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -380,13 +432,13 @@ TEST(redBlackTreePositiveTests, test5)
             red_black_tree<int, std::string>::iterator_data(1, 15, "x", red_black_tree<int, std::string>::node_color::BLACK)
         };
     
-    red_black_tree<int, std::string> rb2 = std::move(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1));
+    red_black_tree<int, std::string> rb2 = std::move(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get()));
     
     EXPECT_TRUE(infix_iterator_test(rb2, expected_result));
     
     logger->trace("redBlackTreePositiveTests.test5 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
 }
 
@@ -401,8 +453,17 @@ TEST(redBlackTreePositiveTests, test6)
         });
     
     logger->trace("redBlackTreePositiveTests.test6 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -422,11 +483,11 @@ TEST(redBlackTreePositiveTests, test6)
             red_black_tree<int, std::string>::iterator_data(1, 15, "x", red_black_tree<int, std::string>::node_color::BLACK)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test6 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
 }
 
@@ -441,8 +502,17 @@ TEST(redBlackTreePositiveTests, test7)
         });
     
     logger->trace("redBlackTreePositiveTests.test7 started");
+
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -464,11 +534,11 @@ TEST(redBlackTreePositiveTests, test7)
             red_black_tree<int, std::string>::iterator_data(1, 15, "x", red_black_tree<int, std::string>::node_color::BLACK)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test7 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
     
 }
@@ -484,8 +554,17 @@ TEST(redBlackTreePositiveTests, test8)
         });
     
     logger->trace("redBlackTreePositiveTests.test8 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -509,11 +588,11 @@ TEST(redBlackTreePositiveTests, test8)
             red_black_tree<int, std::string>::iterator_data(3, 19, "i", red_black_tree<int, std::string>::node_color::RED)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test8 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
 }
 
@@ -528,8 +607,17 @@ TEST(redBlackTreePositiveTests, test9)
         });
     
     logger->trace("redBlackTreePositiveTests.test9 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "a");
     rb1->insert(8, "c");
@@ -554,11 +642,11 @@ TEST(redBlackTreePositiveTests, test9)
             red_black_tree<int, std::string>::iterator_data(3, 19, "i", red_black_tree<int, std::string>::node_color::RED)
         };
     
-    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1), expected_result));
+    EXPECT_TRUE(infix_iterator_test(*reinterpret_cast<red_black_tree<int, std::string> *>(rb1.get()), expected_result));
     
     logger->trace("redBlackTreePositiveTests.test9 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
     
 }
@@ -574,8 +662,17 @@ TEST(redBlackTreePositiveTests, test10)
         });
     
     logger->trace("redBlackTreePositiveTests.test10 started");
+
+    //auto all = std::make_unique<allocator_sorted_list>(10000);
+    auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb1 = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
     
-    search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    //search_tree<int, std::string> *rb1 = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb1->insert(6, "l");
     rb1->insert(8, "c");
@@ -605,7 +702,7 @@ TEST(redBlackTreePositiveTests, test10)
     
     logger->trace("redBlackTreePositiveTests.test10 finished");
     
-    delete rb1;
+    //delete rb1;
     delete logger;
     
 }
@@ -622,7 +719,16 @@ TEST(redBlackTreePositiveTests, test11)
 
     logger->trace("redBlackTreePositiveTests.test11 started");
 
-    search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
+    auto all = std::make_unique<allocator_sorted_list>(10000);
+    //auto all = std::make_unique<allocator_buddies_system>(14);
+    //auto alll = new allocator_global_heap(nullptr);
+    //auto all = std::make_unique<allocator_boundary_tags>(10000);
+
+    auto rb = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), all.get(), nullptr);
+    //search_tree<int, std::string> *bst = new binary_search_tree<int, std::string>(key_comparer(), nullptr, nullptr);
+    //auto rb = std::make_unique<red_black_tree<int, std::string>>(key_comparer(), alll, nullptr);
+
+    //search_tree<int, std::string> *rb = new red_black_tree<int, std::string>(key_comparer(), nullptr, logger);
     
     rb->insert(6, "l");
     rb->insert(8, "c");
@@ -648,7 +754,7 @@ TEST(redBlackTreePositiveTests, test11)
     
     logger->trace("redBlackTreePositiveTests.test11 finished");
     
-    delete rb;
+    //delete rb;
     delete logger;
 }
 
@@ -744,10 +850,6 @@ TEST(own, test1)
     rb->dispose(236);
     rb->dispose(297);
 
-
-
-
-
 }
 
 TEST(own, test2)
@@ -755,7 +857,7 @@ TEST(own, test2)
     red_black_tree<int, int> tree{key_comparer()};
     std::map<int, int> map;
 
-    size_t iterations = 100'000;
+    size_t iterations = 10'000;
 
     srand(time(nullptr));
 

@@ -44,11 +44,6 @@ private:
             _color = new_color;
         }
 
-        node_color get_color()/////////////////??????TODO
-        {
-            return _color;
-        }
-
     };
 
 public:
@@ -316,10 +311,6 @@ public:
 
     postfix_const_reverse_iterator crend_postfix() const noexcept;
 
-
-
-
-    
 };
 
 template<typename tkey, typename tvalue>
@@ -677,19 +668,15 @@ void red_black_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, univ
         return;
     }
 
-    bool down;
     bool up;
 
     if(!stk.empty())
     {
-        down = static_cast<node*>(*(stk.top()))->left_subtree == current_node;
         up = static_cast<node*>(*(stk.top()))->left_subtree == current_node;
     }
 
     while(!stk.empty())
     {
-
-
         if(static_cast<node*>(*stk.top())->_color == node_color::BLACK)
         {
             break;
@@ -750,8 +737,6 @@ void red_black_tree<tkey, tvalue>::insert_inside_universal(const tkey &key, univ
                     static_cast<node*>(grand->right_subtree)->update_color(node_color::BLACK);
                 }
             }
-
-
         }
 
         current_node = static_cast<node*>(*stk.top());
@@ -791,32 +776,19 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
     while(!stk.empty() && need_continue)
     {
-        // region red
         if(static_cast<node*>(*stk.top())->_color == node_color::RED)
         {
             if((*stk.top())->left_subtree == nullptr && (*stk.top())->right_subtree == nullptr)
             {
-
                 current_node = *stk.top();
                 *stk.top() = nullptr;
 
                 if(need_delete)
                 {
-//                    if((*stk.top())->left_subtree == current_node)
-//                    {
-//                        (*stk.top())->left_subtree = nullptr;
-//                    }
-//                    else
-//                    {
-//                        (*stk.top())->right_subtree = nullptr;
-//                    }
-
                     allocator::destruct(current_node);
                     allocator_guardant::deallocate_with_guard(current_node);
-
                     need_delete = false;
                 }
-
 
                 break;
             }
@@ -826,7 +798,6 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                 std::queue<typename binary_search_tree<tkey, tvalue>::node**> que;
 
                 typename binary_search_tree<tkey, tvalue>::node** update = &((*stk.top())->left_subtree);
-
 
                 while((*update)->right_subtree != nullptr)
                 {
@@ -844,7 +815,6 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
                 typename binary_search_tree<tkey, tvalue>::node* leftist = (*update)->left_subtree;
 
-                //*update = (*update)->left_subtree;
                 *update = previous_node;
                 static_cast<node*>(*update)->update_color(removable_color);
 
@@ -854,29 +824,17 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                 (*update)->right_subtree = nullptr;
                 (*update)->left_subtree = leftist;
 
-//                if(!que.empty())
-//                {
                 stk.push(&((*stk.top())->left_subtree));
-                //}
 
                 while(!que.empty())
                 {
-//                    if(que.size() == 1)//crutch
-//                    {
-//                        break;
-//                    }
-
                     stk.push(que.front());
                     que.pop();
                 }
 
-                //current_node = *stk.top();
                 continue;
             }
         }
-
-            // endregion red
-
         else if(static_cast<node*>(*stk.top())->_color == node_color::BLACK)
         {
             if ((*stk.top())->left_subtree != nullptr && (*stk.top())->right_subtree != nullptr)
@@ -885,8 +843,8 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
                 typename binary_search_tree<tkey, tvalue>::node **update = &((*stk.top())->left_subtree);
 
-
-                while ((*update)->right_subtree != nullptr) {
+                while ((*update)->right_subtree != nullptr)
+                {
                     update = &((*update)->right_subtree);
                     que.push(update);
                 }
@@ -901,7 +859,6 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
                 typename binary_search_tree<tkey, tvalue>::node *leftist = (*update)->left_subtree;
 
-                //*update = (*update)->left_subtree;
                 *update = previous_node;
                 static_cast<node *>(*update)->update_color(removable_color);
 
@@ -912,21 +869,15 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                 (*update)->right_subtree = nullptr;
                 (*update)->left_subtree = leftist;
 
-                //if (!que.empty()) {
+
                 stk.push(&((*stk.top())->left_subtree));
-                //}
 
-                while (!que.empty()) {
-//                    if(que.size() == 1)//crutch
-//                    {
-//                        break;
-//                    }
-
+                while (!que.empty())
+                {
                     stk.push(que.front());
                     que.pop();
                 }
 
-                //current_node = *stk.top();
                 continue;
             }
             else if ((*stk.top())->left_subtree != nullptr || (*stk.top())->right_subtree != nullptr)
@@ -955,7 +906,7 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                     stk.push(&((*stk.top())->left_subtree));
 
                     continue;
-                    //current_node = *stk.top();
+
                 }
                 else if ((*stk.top())->right_subtree != nullptr && (*stk.top())->left_subtree == nullptr)
                 {
@@ -982,8 +933,6 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                     stk.push(&((*stk.top())->right_subtree));
 
                     continue;
-
-                    //current_node = *stk.top();
                 }
             }
             else if ((*stk.top())->left_subtree == nullptr && (*stk.top())->right_subtree == nullptr)
@@ -992,7 +941,8 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                 {
                     typename binary_search_tree<tkey, tvalue>::node* current = *stk.top();
                     *stk.top() = nullptr;
-                    if (need_delete) {
+                    if (need_delete)
+                    {
                         allocator::destruct(current);
                         allocator_guardant::deallocate_with_guard(current);
                         need_delete = false;
@@ -1006,26 +956,27 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
 
                     stk.pop();
 
-                    //bool up;
                     typename binary_search_tree<tkey, tvalue>::node *parent;
                     typename binary_search_tree<tkey, tvalue>::node *brother;
 
-                    if (!stk.empty()) {
-                        //up = (*stk.top())->left_subtree == current;
+                    if (!stk.empty())
+                    {
                         parent = *stk.top();
-                    } else {
-                        if (need_delete) {
+                    }
+                    else
+                    {
+                        if (need_delete)
+                        {
                             allocator::destruct(current);
                             allocator_guardant::deallocate_with_guard(current);
                         }
                         need_delete = false;
-                        break;///////////////////////////////временно need to delete
+                        break;
                     }
 
                     if (parent->left_subtree == current)
                     {
-
-                        if (static_cast<node *>(parent->right_subtree)->_color == node_color::RED) ///done
+                        if (static_cast<node *>(parent->right_subtree)->_color == node_color::RED)
                         {
                             binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
                             static_cast<node *>(*stk.top())->update_color(node_color::BLACK);
@@ -1034,19 +985,9 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                             typename binary_search_tree<tkey, tvalue>::node* removable = (*stk.top())->left_subtree;
                             stk.push(&(removable));
                             continue;
-                        } else if (static_cast<node *>(parent->right_subtree)->_color == node_color::BLACK) {
-//                            current_node = *stk.top();
-//                            stk.pop();
-//                            if ((*stk.top())->left_subtree == current) {
-//                                (*stk.top())->left_subtree = nullptr;
-//                            } else {
-//                                (*stk.top())->right_subtree = nullptr;
-//                            }
-//                            if (need_delete) {
-//                                allocator::destruct(current);
-//                                allocator_guardant::deallocate_with_guard(current);
-//                            }
-//                            need_delete = false;
+                        }
+                        else if (static_cast<node *>(parent->right_subtree)->_color == node_color::BLACK)
+                        {
 
                             brother = parent->right_subtree;
 
@@ -1057,49 +998,33 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                                 if(need_delete)
                                 {
                                     (*stk.top())->left_subtree = nullptr;
-//                                    if ((*stk.top())->left_subtree == current) {
-//                                        (*stk.top())->left_subtree = nullptr;
-//                                    } else {
-//                                        (*stk.top())->right_subtree = nullptr;
-//                                    }
-
                                     allocator::destruct(current);
                                     allocator_guardant::deallocate_with_guard(current);
-
                                     need_delete = false;
                                 }
-
-
 
                                 static_cast<node *>(brother)->update_color(node_color::RED);
                                 node_color color_of_parent = static_cast<node *>(parent)->_color;
                                 static_cast<node *>(parent)->update_color(node_color::BLACK);
-                                if (color_of_parent == node_color::BLACK) {
-                                    //stk.pop();////
+                                if (color_of_parent == node_color::BLACK)
+                                {
                                     continue;
-                                } else {
+                                }
+                                else
+                                {
                                     need_continue = false;
                                     break;
                                 }
                             }
-                            else if (brother->right_subtree != nullptr && static_cast<node *>(brother->right_subtree)->_color == node_color::RED)   ///done
+                            else if (brother->right_subtree != nullptr && static_cast<node *>(brother->right_subtree)->_color == node_color::RED)
                             {
                                 if (need_delete)
                                 {
                                     (*stk.top())->left_subtree = nullptr;
-//                                    if ((*stk.top())->left_subtree == current) {
-//                                        (*stk.top())->left_subtree = nullptr;
-//                                    } else {
-//                                        (*stk.top())->right_subtree = nullptr;
-//                                    }
-
                                     allocator::destruct(current);
                                     allocator_guardant::deallocate_with_guard(current);
-
                                     need_delete = false;
                                 }
-
-
 
                                 node_color parent_color = static_cast<node *>(parent)->_color;
                                 binary_search_tree<tkey, tvalue>::small_left_rotation(*stk.top());
@@ -1125,7 +1050,7 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                     }
                     else if (parent->right_subtree == current)
                     {
-                        if (static_cast<node *>(parent->left_subtree)->_color == node_color::RED) ///done
+                        if (static_cast<node *>(parent->left_subtree)->_color == node_color::RED) 
                         {
                             binary_search_tree<tkey, tvalue>::small_right_rotation(*stk.top());
                             static_cast<node *>(*stk.top())->update_color(node_color::BLACK);
@@ -1134,20 +1059,9 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                             typename binary_search_tree<tkey, tvalue>::node* removable = (*stk.top())->right_subtree;
                             stk.push(&(removable));
                             continue;
-                        } else if (static_cast<node *>(parent->left_subtree)->_color == node_color::BLACK) {
-//                            current_node = *stk.top();
-//                            stk.pop();
-//                            if ((*stk.top())->left_subtree == current) {
-//                                (*stk.top())->left_subtree = nullptr;
-//                            } else {
-//                                (*stk.top())->right_subtree = nullptr;
-//                            }
-//                            if (need_delete) {
-//                                allocator::destruct(current);
-//                                allocator_guardant::deallocate_with_guard(current);
-//                            }
-//                            need_delete = false;
-
+                        }
+                        else if (static_cast<node *>(parent->left_subtree)->_color == node_color::BLACK)
+                        {
                             brother = parent->left_subtree;
 
                             if ((brother->left_subtree == nullptr && brother->right_subtree == nullptr) ||
@@ -1157,27 +1071,20 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                                 if(need_delete)
                                 {
                                     (*stk.top())->right_subtree = nullptr;
-//                                    if ((*stk.top())->left_subtree == current) {
-//                                        (*stk.top())->left_subtree = nullptr;
-//                                    } else {
-//                                        (*stk.top())->right_subtree = nullptr;
-//                                    }
-
                                     allocator::destruct(current);
                                     allocator_guardant::deallocate_with_guard(current);
-
                                     need_delete = false;
                                 }
-
-
 
                                 static_cast<node *>(brother)->update_color(node_color::RED);
                                 node_color color_of_parent = static_cast<node *>(parent)->_color;
                                 static_cast<node *>(parent)->update_color(node_color::BLACK);
-                                if (color_of_parent == node_color::BLACK) {
-                                    //stk.pop();////
+                                if (color_of_parent == node_color::BLACK)
+                                {
                                     continue;
-                                } else {
+                                }
+                                else
+                                {
                                     need_continue = false;
                                     break;
                                 }
@@ -1187,19 +1094,10 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                                 if (need_delete)
                                 {
                                     (*stk.top())->right_subtree = nullptr;
-//                                    if ((*stk.top())->left_subtree == current) {
-//                                        (*stk.top())->left_subtree = nullptr;
-//                                    } else {
-//                                        (*stk.top())->right_subtree = nullptr;
-//                                    }
-
                                     allocator::destruct(current);
                                     allocator_guardant::deallocate_with_guard(current);
-
                                     need_delete = false;
                                 }
-
-
 
                                 node_color parent_color = static_cast<node *>(parent)->_color;
                                 binary_search_tree<tkey, tvalue>::small_right_rotation(*stk.top());
@@ -1218,34 +1116,16 @@ tvalue red_black_tree<tkey, tvalue>::dispose_inside(std::stack<typename binary_s
                                 stk.push(&((*stk.top())->right_subtree));
                                 continue;
                             }
-
-
                         }
                     }
                 }
                 need_continue = false;
             }
-
         }
-
     }
-
-
-
-//    if(static_cast<node*>(current_node)->_color == node_color::RED && current_node->left_subtree == nullptr && current_node->right_subtree == nullptr)
-//    {
-//        *stk.top() = nullptr;
-//        stk.pop();
-//    }
-
-    //allocator::destruct(current_node);
-    //allocator_guardant::deallocate_with_guard(current_node);
-
 //    print_rb(binary_search_tree<tkey, tvalue>::_root, 0);
 //    std::cout << "\n-------------------------------------------------\n" << std::endl;
-
     return res;
-
 }
 
 
