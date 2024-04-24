@@ -145,7 +145,7 @@ private:
 
     class iterator
     {
-        void* _crutch;
+        void* _crutch ;
         void* _ptr;
 
     public:

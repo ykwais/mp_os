@@ -413,7 +413,7 @@ bool allocator_red_black_tree::is_left_subtree(void* child, void* parent) noexce
 
 void allocator_red_black_tree::small_right_rotate(void* joint) noexcept
 {
-    if(get_left(joint) != nullptr)
+    if(get_left(joint) !=  nullptr)
     {
         void* left_son = get_left(joint);
 

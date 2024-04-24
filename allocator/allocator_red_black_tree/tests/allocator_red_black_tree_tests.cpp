@@ -69,7 +69,7 @@ TEST(allocatorRBTPositiveTests, test1)
 
     auto third_block = reinterpret_cast<int *>(alloc->allocate(sizeof(int), 250));
 
-    alloc->deallocate(second_block);
+    alloc->deallocate( second_block);
     alloc->deallocate(first_block);
     alloc->deallocate(third_block);
 
