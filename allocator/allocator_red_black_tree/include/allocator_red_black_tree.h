@@ -81,7 +81,7 @@ public:
 
 public:
     
-    std::vector<allocator_test_utils::block_info> get_blocks_info() const noexcept;
+    std::vector<allocator_test_utils::block_info> get_blocks_info(size_t& full_size_avail) const noexcept override;
 
 private:
 
@@ -93,7 +93,7 @@ private:
 
 private:
 
-    inline std::mutex& get_mutex() noexcept;
+    inline std::mutex& get_mutex() const noexcept;
 
     inline allocator_with_fit_mode::fit_mode& get_fit_mode() const noexcept;
 
@@ -129,13 +129,59 @@ private:
 
     void big_left_rotate(void* joint) noexcept;
 
-    void print_tree(void *block, size_t depth);
+    void print_tree(void *block, size_t depth = 0);
 
     void insert_rb_tree(void* current_block) noexcept;
 
     void remove_rb_tree(void* current_block) noexcept;
 
     void rebalance(void* parent, void* deleted = nullptr);
+
+    void* get_first_suitable(size_t size) const noexcept;
+
+    void* get_worst_suitable(size_t size) const noexcept;
+
+    void* get_best_suitable(size_t size) const noexcept;
+
+    class iterator
+    {
+        void* _crutch;
+        void* _ptr;
+
+    public:
+
+        iterator();
+
+        iterator(void* ptr);
+
+        bool operator==(const iterator& oth) const noexcept;
+
+        bool operator!=(const iterator& oth) const noexcept;
+
+        iterator& operator++() noexcept;
+
+        iterator operator++(int) noexcept;
+
+        size_t size();
+
+        void* get_ptr_free_block() const noexcept;
+
+        bool is_occup() const noexcept;
+
+    };
+
+    friend class iterator;
+
+    iterator begin_iter() const noexcept;
+
+    iterator end_iter() const noexcept;
+
+    static std::string get_info_in_string(const std::vector<allocator_test_utils::block_info>& vec) noexcept;
+
+    static std::string get_dump(char* at, size_t size);
+
+    size_t get_all_free_size() const noexcept;
+
 
 
 };
