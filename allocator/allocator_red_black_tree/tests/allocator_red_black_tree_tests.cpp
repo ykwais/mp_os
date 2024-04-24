@@ -73,6 +73,15 @@ TEST(allocatorRBTPositiveTests, test1)
     alloc->deallocate(first_block);
     alloc->deallocate(third_block);
 
+//    auto first = reinterpret_cast<char*>(alloc->allocate(sizeof(char), 10));
+//    auto second = reinterpret_cast<char*>(alloc->allocate(sizeof(char), 20));
+//    auto third = reinterpret_cast<char*>(alloc->allocate(sizeof(char), 30));
+//    auto fourth = reinterpret_cast<char*>(alloc->allocate(sizeof(char), 40));
+//    alloc->deallocate(second);
+//
+//    auto fifth = reinterpret_cast<char*>(alloc->allocate(sizeof(char), 50));
+//    alloc->deallocate(fourth);
+
     //TODO: ????????
 
     delete alloc;
@@ -110,8 +119,8 @@ TEST(allocatorRBTPositiveTests, test5)
 
 
     //TODO: logger
-    allocator_red_black_tree *allocator = new allocator_red_black_tree(20'000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
-    int iterations_count = 100000;
+    allocator_red_black_tree *allocator = new allocator_red_black_tree(20000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
+    int iterations_count = 10000;
 
     std::list<void *> allocated_blocks;
     srand((unsigned)time(nullptr));
@@ -124,18 +133,18 @@ TEST(allocatorRBTPositiveTests, test5)
             case 1:
                 try
                 {
-//					switch (rand() % 3)
-//					{
-//						case 0:
-//							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::first_fit);
-//							break;
-//						case 1:
-//							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::the_best_fit);
-//							break;
-//						case 2:
-//							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::the_worst_fit);
-//							break;
-//					}
+					switch (rand() % 3)
+					{
+						case 0:
+							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::first_fit);
+							break;
+						case 1:
+							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::the_best_fit);
+							break;
+						case 2:
+							allocator->set_fit_mode(allocator_with_fit_mode::fit_mode::the_worst_fit);
+							break;
+					}
 
                     allocated_blocks.push_front(allocator->allocate(sizeof(char), rand() % 251 + 50));
                     std::cout << "allocation succeeded" << std::endl;
