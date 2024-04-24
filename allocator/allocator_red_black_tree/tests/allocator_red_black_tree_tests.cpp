@@ -240,7 +240,7 @@ TEST(allocatorRBTPositiveTests, test7)
 
 int main(
     int argc,
-    char *argv[])
+    char *argv[] )
 {
     ::testing::InitGoogleTest(&argc, argv);
     
