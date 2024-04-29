@@ -218,7 +218,7 @@ void allocator_red_black_tree::deallocate(
 
     get_occup_color(block_start).occupied = false;
 
-    if(get_back(block_start) != nullptr && get_occup_color(get_back(block_start)).occupied == false)
+    if(get_back(block_start) != nullptr && !get_occup_color(get_back(block_start)).occupied)
     {
         void* tmp = block_start;
         block_start = get_back(block_start);
