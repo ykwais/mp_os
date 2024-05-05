@@ -51,7 +51,7 @@ protected:
     
     std::function<int(tkey const &, tkey const &)> _keys_comparer;
 
-private:
+protected:
     
     logger *_logger;
     
@@ -74,9 +74,9 @@ public:
 
 
 protected:
-    
+
     [[nodiscard]] inline allocator *get_allocator() const final;
-    
+
     [[nodiscard]] inline logger *get_logger() const final;
     
 };
