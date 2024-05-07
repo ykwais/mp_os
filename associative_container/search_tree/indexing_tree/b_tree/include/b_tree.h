@@ -43,32 +43,40 @@ protected:
 
     size_t _size;
 
-    size_t get_t()
-    {
-        return _t;
-    }
-
-
-
 public:
 
     class infix_iterator final
     {
 
+        std::stack<std::pair<btree_node**, size_t>> _path;
+
+        size_t _index;
+
     public:
 
-        bool operator==(
-            infix_iterator const &other) const noexcept;
+        bool operator==( infix_iterator const &other) const noexcept;
 
-        bool operator!=(
-            infix_iterator const &other) const noexcept;
+        bool operator!=(infix_iterator const &other) const noexcept;
 
-        infix_iterator &operator++();
+        infix_iterator& operator++();
 
-        infix_iterator operator++(
-            int not_used);
+        infix_iterator operator++(int);
 
-        std::tuple<size_t, size_t, tkey const &, tvalue &> operator*() const;
+        infix_iterator& operator--();
+
+        infix_iterator operator--(int);
+
+        //std::tuple<size_t, size_t, tkey const &, tvalue &> operator*() const;
+
+        pair_node_tree& operator*() const noexcept;
+
+        pair_node_tree* operator->() const noexcept;
+
+        size_t amount_pairs() const noexcept;
+
+        bool is_term_node() const noexcept;
+
+        explicit infix_iterator(const std::stack<std::pair<btree_node**, size_t>>& path = std::stack<std::pair<btree_node**, size_t>>(), size_t index = 0);
 
     };
 
@@ -152,7 +160,18 @@ private:
 
     void destroy_subtree(btree_node* node);
 
+    std::pair<size_t, bool> find_index(const tkey& key, btree_node* node) const noexcept;
+
     std::pair<std::stack<std::pair<btree_node**, size_t>>, size_t> find_path(const tkey& key) const noexcept;
+
+    bool is_terma(btree_node* node) noexcept;
+
+    void insert_in_btree_node(btree_node* current_node, btree_node* right_node, pair_node_tree&& pair, size_t index) noexcept;
+
+    btree_node* remove_from_btree_node(btree_node* current_node, size_t index, bool need_remove_left) noexcept;
+
+    template<typename universal_tvalue>
+    infix_iterator insert_inside(pair_node_tree&& data, std::stack<std::pair<btree_node**, size_t>>& path);
 
 
 protected:
@@ -179,13 +198,13 @@ b_tree<tkey, tvalue>::btree_node::~btree_node() noexcept
     _virtual_size = 0;
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-bool b_tree<tkey, tvalue>::infix_iterator::operator==(
-    typename b_tree::infix_iterator const &other) const noexcept
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::infix_iterator::infix_iterator(const std::stack<std::pair<btree_node**, size_t>>& path , size_t index) : _path(path), _index(index) {}
+
+template<typename tkey, typename tvalue>
+bool b_tree<tkey, tvalue>::infix_iterator::operator==(typename b_tree::infix_iterator const &other) const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> bool b_tree<tkey, tvalue>::infix_iterator::operator==(typename b_tree::infix_iterator const &) const noexcept", "your code should be here...");
+    return (_path.empty() && other._path.empty()) || (!_path.empty() && !other._path.empty() && _path.size() == other._path.size() && *(_path.top().first) == *(other._path.top().first) && _index == other._index);
 }
 
 template<
@@ -194,41 +213,122 @@ template<
 bool b_tree<tkey, tvalue>::infix_iterator::operator!=(
     typename b_tree::infix_iterator const &other) const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> bool b_tree<tkey, tvalue>::infix_iterator::operator!=(typename b_tree::infix_iterator const &) const noexcept", "your code should be here...");
+    return !(*this == other);
 }
 
-template<
-    typename tkey,
-    typename tvalue>
+template<typename tkey,typename tvalue>
 typename b_tree<tkey, tvalue>::infix_iterator &b_tree<tkey, tvalue>::infix_iterator::operator++()
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_iterator &b_tree<tkey, tvalue>::infix_iterator::operator++()", "your code should be here...");
+    if(_path.empty())
+    {
+        return *this;
+    }
+
+    if(is_term_node())
+    {
+        _index += 1;
+        while(!_path.empty() && _index == *(_path.top().first)->_virtual_size)
+        {
+            _index = _path.top().second;
+            _path.pop();
+        }
+    }
+    else
+    {
+        _path.push(std::make_pair(*(_path.top().first)->subtrees[_index + 1], _index + 1));
+        _index = 0;
+        while(!is_term_node())
+        {
+            _path.push(std::make_pair(*(_path.top().first)->subtrees[_index], _index));
+            _index = 0;
+        }
+    }
+
+    return *this;
+
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::infix_iterator::operator++(
-    int not_used)
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::infix_iterator::operator++(int not_used)
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::infix_iterator::operator++(int)", "your code should be here...");
+    auto tmp = *this;
+    ++(*this);
+    return tmp;
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-std::tuple<size_t, size_t, tkey const &, tvalue &> b_tree<tkey, tvalue>::infix_iterator::operator*() const
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::infix_iterator& b_tree<tkey, tvalue>::infix_iterator::operator--()
 {
-    throw not_implemented("template<typename tkey, typename tvalue> std::tuple<size_t, size_t, tkey const &, tvalue &> b_tree<tkey, tvalue>::infix_iterator::operator*() const", "your code should be here...");
+    if(_path.empty())
+    {
+        return *this;
+    }
+
+    if(is_term_node())
+    {
+        if(_index == 0)
+        {
+            while(!_path.empty() && _index == 0)
+            {
+                _index = _path.top().second;
+                _path.pop();
+            }
+
+        }
+
+        --_index;
+
+    }
+    else
+    {
+        while(!is_term_node())
+        {
+            _path.push(std::make_pair(&(*(_path.top().first)->subtrees[_index]), _index));
+            _index = *(_path.top().first)->_virtual_size;
+        }
+        --_index;
+    }
 }
 
-template<
-    typename tkey,
-    typename tvalue>
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::infix_iterator::operator--(int)
+{
+    auto tmp = *this;
+    --(*this);
+    return tmp;
+}
+
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::pair_node_tree& b_tree<tkey, tvalue>::infix_iterator::operator*() const noexcept
+{
+    return (*(_path.top().first)->_pairs_of_node[_index]);
+}
+
+template<typename tkey, typename tvalue>
+b_tree<tkey, tvalue>::pair_node_tree* b_tree<tkey, tvalue>::infix_iterator::operator->() const noexcept
+{
+    return &(*(_path.top().first)->_pairs_of_node[_index]);
+}
+
+template<typename tkey, typename tvalue>
+bool b_tree<tkey, tvalue>::infix_iterator::is_term_node() const noexcept
+{
+    return (_path.empty()) || (*(_path.top().first) == nullptr)  || (*(_path.top().first)->subtrees[0] == nullptr);
+}
+
+template<typename tkey, typename tvalue>
+size_t b_tree<tkey, tvalue>::infix_iterator::amount_pairs() const noexcept
+{
+    return *(_path.top().first)->_virtual_size;
+}
+
+
+
+template<typename tkey, typename tvalue>
 bool b_tree<tkey, tvalue>::infix_const_iterator::operator==(
     b_tree::infix_const_iterator const &other) const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> bool b_tree<tkey, tvalue>::infix_const_iterator::operator==(b_tree::infix_const_iterator const &) const noexcept", "your code should be here...");
+
 }
 
 template<
@@ -237,7 +337,6 @@ template<
 bool b_tree<tkey, tvalue>::infix_const_iterator::operator!=(
     b_tree::infix_const_iterator const &other) const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> bool b_tree<tkey, tvalue>::infix_const_iterator::operator!=(b_tree::infix_const_iterator const &) const noexcept", "your code should be here...");
 }
 
 template<
@@ -245,7 +344,6 @@ template<
     typename tvalue>
 typename b_tree<tkey, tvalue>::infix_const_iterator &b_tree<tkey, tvalue>::infix_const_iterator::operator++()
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_const_iterator &b_tree<tkey, tvalue>::infix_const_iterator::operator++()", "your code should be here...");
 }
 
 template<
@@ -254,7 +352,6 @@ template<
 typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::infix_const_iterator::operator++(
     int not_used)
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::infix_const_iterator::operator++(int)", "your code should be here...");
 }
 
 template<
@@ -262,29 +359,23 @@ template<
     typename tvalue>
 std::tuple<size_t, size_t, tkey const &, tvalue const &> b_tree<tkey, tvalue>::infix_const_iterator::operator*() const
 {
-    throw not_implemented("template<typename tkey, typename tvalue> std::tuple<size_t, size_t, tkey const &, tvalue const &> b_tree<tkey, tvalue>::infix_const_iterator::operator*() const", "your code should be here...");
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-void b_tree<tkey, tvalue>::insert(
-    tkey const &key,
-    tvalue const &value)
+template<typename tkey, typename tvalue>
+void b_tree<tkey, tvalue>::insert(tkey const &key, tvalue const &value)
 {
-    std::cout<<"todo"<<std::endl;
+
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-void b_tree<tkey, tvalue>::insert(
-    tkey const &key,
-    tvalue &&value)
+template<typename tkey,typename tvalue>
+void b_tree<tkey, tvalue>::insert(tkey const &key,tvalue &&value)
 {
-    std::cout<<"todo"<<std::endl;
 
 }
+
+template<typename tkey, typename tvalue>
+template<typename universal_tvalue>
+
 
 template<
     typename tkey,
@@ -497,7 +588,22 @@ template<
     typename tvalue>
 typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::begin_infix() const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::begin_infix() const noexcept", "your code should be here...");
+    if(_root == nullptr)
+    {
+        return infix_iterator();
+    }
+
+    std::stack<std::pair<btree_node**, size_t>> stk;
+
+    stk.push(std::make_pair(&(_root), 0));
+
+    while(*(stk.top().first)->_virtual_size > 0 && *(stk.top().first)->subtrees[0] != nullptr)
+    {
+        stk.push(std::make_pair(&(*(stk.top().first)->subtrees[0]), 0));
+    }
+
+    return infix_iterator(stk, 0);
+
 }
 
 template<
@@ -505,7 +611,7 @@ template<
     typename tvalue>
 typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::end_infix() const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::end_infix() const noexcept", "your code should be here...");
+    return infix_iterator();
 }
 
 template<
@@ -513,7 +619,7 @@ template<
     typename tvalue>
 typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::cbegin_infix() const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::cbegin_infix() const noexcept", "your code should be here...");
+
 }
 
 template<
@@ -521,7 +627,7 @@ template<
     typename tvalue>
 typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::cend_infix() const noexcept
 {
-    throw not_implemented("template<typename tkey, typename tvalue> typename b_tree<tkey, tvalue>::infix_const_iterator b_tree<tkey, tvalue>::cend_infix() const noexcept", "your code should be here...");
+
 }
 
 
@@ -532,10 +638,142 @@ template<typename tkey, typename tvalue>
 size_t b_tree<tkey, tvalue>::_max_keys_in_node = 3;
 
 template<typename tkey, typename tvalue>
-std::pair<std::stack<std::pair<typename b_tree<tkey, tvalue>::btree_node**, size_t>>, size_t> b_tree<tkey, tvalue>::find_path(const tkey &key) const noexcept
+bool b_tree<tkey, tvalue>::is_terma(b_tree::btree_node *node) noexcept
 {
+    return node == nullptr || node->_subtrees[0] == nullptr;
+}
+
+template<typename tkey, typename tvalue>
+std::pair<size_t, bool> b_tree<tkey, tvalue>::find_index(const tkey &key, b_tree::btree_node *node) const noexcept
+{
+    size_t begin = 0;
+    size_t end = node->_virtual_size;
+
+    while(end > begin)
+    {
+        size_t middle = begin +  (end - begin)/2;
+
+        int cmp = search_tree<tkey, tvalue>::_keys_comparer(key, node->_pairs_of_node[middle].first);
+
+        if(cmp > 0)
+        {
+            begin = middle + 1;
+        }
+        else if(cmp < 0)
+        {
+            end = middle;
+        }
+        else
+        {
+            return std::make_pair(middle, true);
+        }
+
+    }
+
+    if(begin == node->_virtual_size)
+    {
+        return std::make_pair(node->_virtual_size, false);
+    }
+
+    if(search_tree<tkey, tvalue>::_keys_comparer(key, node->_pairs_of_node[begin].first))
+    {
+        return std::make_pair(begin + 1, false);//>
+    }
+    else
+    {
+        return std::make_pair(begin, false);//<
+    }
 
 }
+
+template<typename tkey, typename tvalue>
+std::pair<std::stack<std::pair<typename b_tree<tkey, tvalue>::btree_node**, size_t>>, size_t> b_tree<tkey, tvalue>::find_path(const tkey &key) const noexcept
+{
+    if(_root == nullptr)
+    {
+        std::stack<std::pair<b_tree<tkey, tvalue>::btree_node**, size_t>> stk;
+        stk.push(std::make_pair(&_root, size_t(0)));
+        return std::make_pair(std::move(stk), size_t(1));
+    }
+    else
+    {
+        std::stack<std::pair<b_tree<tkey, tvalue>::btree_node**, size_t>> stk;
+
+        stk.push(std::make_pair(&_root, size_t(0)));
+
+        auto [index, found] = find_index(key, *(stk.top().first));
+
+        while(!found && !is_terma(*(stk.top().first)))
+        {
+            stk.push(std::make_pair(&(*stk.top().first->subtrees[index]), index));
+            auto tmp = find_index(key, *(stk.top().first));
+            index = tmp.first;
+            found = tmp.second;
+        }
+
+        return found ? std::make_pair(std::move(stk), index) : std::make_pair(std::move(stk), (*stk.top().first)->_virtual_size + 1);
+
+    }
+
+}
+
+template<typename tkey, typename tvalue>
+void b_tree<tkey, tvalue>::insert_in_btree_node(btree_node* current_node, btree_node* right_node, pair_node_tree&& pair, size_t index) noexcept
+{
+    for(size_t i = current_node->_virtual_size; i > index; --i)
+    {
+        allocator::construct(&(current_node->_pairs_of_node[i]), std::move(current_node->_pairs_of_node[i-1]));
+        allocator::destruct(&(current_node->_pairs_of_node[i-1]));
+        current_node->_subtrees[i+1] = current_node->_subtrees[i];
+    }
+    allocator::construct(&(current_node->_pairs_of_node[index]), std::move(pair));
+    current_node->_subtrees[index + 1] = right_node;
+    current_node->_virtual_size += 1;
+}
+
+template<typename tkey, typename tvalue>
+typename b_tree<tkey, tvalue>::btree_node* b_tree<tkey, tvalue>::remove_from_btree_node(btree_node *current_node, size_t index, bool need_remove_left) noexcept
+{
+    btree_node* parrot = need_remove_left ? current_node->_subtrees[index] : current_node->_subtrees[index + 1];
+
+    bool is_bottom = is_terma(current_node);
+
+    for(size_t i = index; i < current_node->_virtual_size - 1; ++i)
+    {
+        std::swap(current_node->_pairs_of_node[i], current_node->_pairs_of_node[i+1]);
+        if(need_remove_left)
+        {
+            current_node->_subtrees[i] = current_node->_subtrees[i+1];
+        }
+        else
+        {
+            current_node->_subtrees[i+1] = current_node->_subtrees[i+2];
+        }
+
+    }
+
+    if(need_remove_left)
+    {
+        current_node->_subtrees[current_node->_virtual_size - 1] = current_node->_subtrees[current_node->_virtual_size];
+    }
+
+    allocator::destruct(&(current_node->_pairs_of_node[current_node->_virtual_size - 1]));
+
+    current_node->_virtual_size -= 1;
+
+    if(is_bottom && index == 0 && need_remove_left)
+    {
+        parrot = nullptr;
+    }
+
+    if(is_bottom)
+    {
+        current_node->_subtrees[0] = nullptr;
+    }
+
+    return parrot;
+}
+
 
 
 #endif //MATH_PRACTICE_AND_OPERATING_SYSTEMS_TEMPLATE_REPO_B_TREE_H
