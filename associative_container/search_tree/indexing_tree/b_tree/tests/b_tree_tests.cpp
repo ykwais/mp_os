@@ -196,7 +196,8 @@ TEST(bTreePositiveTests, test0)
 
     };
 
-    search_tree<int, std::string> *tree = new b_tree<int, std::string>(1024, [](int const &left, int const &right) { return left - right; });
+    search_tree<int, std::string> *tree = new b_tree<int, std::string>(1024, [](int const &left, int const &right) { return left - right; },
+                                                                       nullptr, nullptr);
     //b_tree<int, std::string> tree(1024, [](int const &left, int const &right) { return left - right; });
     EXPECT_TRUE(infix_const_iterator_test(*reinterpret_cast<b_tree<int, std::string> const *>(tree), expected_result, keys_comparer, values_comparer));
 
