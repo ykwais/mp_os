@@ -14,76 +14,7 @@ class b_tree:
 
 protected:
 
-    enum class insertion_of_existent_key_attempt_strategy
-    {
-        update_value,
-        throw_an_exception
-    };
 
-    class insertion_of_existent_key_attempt_exception final:
-            public std::logic_error
-    {
-
-    private:
-
-        tkey _key;
-
-    public:
-
-        explicit insertion_of_existent_key_attempt_exception(
-                tkey const &key);
-
-    public:
-
-        tkey const &get_key() const noexcept;
-
-    };
-
-    enum class disposal_of_nonexistent_key_attempt_strategy
-    {
-        do_nothing,
-        throw_an_exception
-    };
-
-
-    class disposal_of_nonexistent_key_attempt_exception final:
-            public std::logic_error
-    {
-
-    private:
-
-        tkey _key;
-
-    public:
-
-        explicit disposal_of_nonexistent_key_attempt_exception(
-                tkey const &key);
-
-    public:
-
-        tkey const &get_key() const noexcept;
-
-    };
-
-
-    class obtaining_of_nonexistent_key_attempt_exception final:
-            public std::logic_error
-    {
-
-    private:
-
-        tkey _key;
-
-    public:
-
-        explicit obtaining_of_nonexistent_key_attempt_exception(
-                tkey const &key);
-
-    public:
-
-        tkey const &get_key() const noexcept;
-
-    };
 
 public:
     using pair_node_tree = std::pair<tkey, tvalue>;
@@ -114,10 +45,6 @@ protected:
 
 
     mutable btree_node* _root;
-
-    insertion_of_existent_key_attempt_strategy _insert_exist_strategy;
-
-    disposal_of_nonexistent_key_attempt_strategy _dispose_nonexist_strategy;
 
     size_t _size;
 
@@ -156,6 +83,11 @@ public:
 
         explicit infix_iterator(const std::stack<std::pair<btree_node**, size_t>>& path = std::stack<std::pair<btree_node**, size_t>>(), size_t index = 0);
 
+        void update_index(size_t new_index)
+        {
+            _index = new_index;
+        }
+
     };
 
     class infix_const_iterator final
@@ -177,6 +109,9 @@ public:
         std::tuple<size_t, size_t, tkey const &, tvalue const &> operator*() const;
 
     };
+
+    friend class infix_iterator;
+    friend class infix_const_iterator;
 
 public:
 
@@ -200,15 +135,17 @@ public:
         bool lower_bound_inclusive,
         bool upper_bound_inclusive) override;
 
+    void update(tkey const& key, tvalue const& value);
+
+    void update(tkey const& key, tvalue&& value);
+
 public:
 
     explicit b_tree(
         size_t t,
         std::function<int(tkey const &, tkey const &)> keys_comparer = std::less<tkey>(),
         allocator *allocator = nullptr,
-        logger *logger = nullptr,
-        typename b_tree<tkey, tvalue>::insertion_of_existent_key_attempt_strategy insertion_strategy = b_tree<tkey, tvalue>::insertion_of_existent_key_attempt_strategy::throw_an_exception,
-        typename b_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_strategy disposal_strategy = b_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_strategy::throw_an_exception);
+        logger *logger = nullptr);
 
     b_tree(
         b_tree<tkey, tvalue> const &other);
@@ -248,11 +185,21 @@ private:
 
     void insert_in_btree_node(btree_node* current_node, btree_node* right_node, pair_node_tree&& pair, size_t index) noexcept;
 
-    btree_node* remove_from_btree_node(btree_node* current_node, size_t index, bool need_remove_left) noexcept;
+    btree_node* remove_from_btree_node(btree_node* current_node, size_t index, bool need_remove_left = true) noexcept;
 
     void insert_inside(pair_node_tree&& data, std::stack<std::pair<btree_node**, size_t>>& path);
 
-    void split_node(std::stack<std::pair<btree_node**, size_t>>& path, btree_node*& node, size_t index);
+    void split_node(std::stack<std::pair<btree_node**, size_t>>& path, btree_node*& node, size_t& index);
+
+    tvalue dispose_inside(std::stack<std::pair<btree_node**, size_t>>& path, size_t& index) noexcept;
+
+    void rebalance_node(std::stack<std::pair<btree_node**, size_t>>& path, btree_node*& node, size_t& index);
+
+    void check_tree(btree_node *node, size_t depth);
+
+    static bool exist(btree_node* node, size_t index) noexcept;
+
+
 
 
 protected:
@@ -308,7 +255,7 @@ typename b_tree<tkey, tvalue>::infix_iterator &b_tree<tkey, tvalue>::infix_itera
     if(is_term_node())
     {
         _index += 1;
-        while(!_path.empty() && _index == *(_path.top().first)->_virtual_size)
+        while(!_path.empty() && _index == (*(_path.top().first))->_virtual_size)
         {
             _index = _path.top().second;
             _path.pop();
@@ -316,11 +263,11 @@ typename b_tree<tkey, tvalue>::infix_iterator &b_tree<tkey, tvalue>::infix_itera
     }
     else
     {
-        _path.push(std::make_pair(*(_path.top().first)->subtrees[_index + 1], _index + 1));
+        _path.push(std::make_pair(&((*(_path.top().first))->_subtrees[_index + 1]), _index + 1));
         _index = 0;
         while(!is_term_node())
         {
-            _path.push(std::make_pair(*(_path.top().first)->subtrees[_index], _index));
+            _path.push(std::make_pair(&((*(_path.top().first))->_subtrees[_index]), _index));
             _index = 0;
         }
     }
@@ -364,8 +311,8 @@ b_tree<tkey, tvalue>::infix_iterator& b_tree<tkey, tvalue>::infix_iterator::oper
     {
         while(!is_term_node())
         {
-            _path.push(std::make_pair(&(*(_path.top().first)->subtrees[_index]), _index));
-            _index = *(_path.top().first)->_virtual_size;
+            _path.push(std::make_pair(&((*(_path.top().first))->_subtrees[_index]), _index));
+            _index = (*(_path.top().first))->_virtual_size;
         }
         --_index;
     }
@@ -382,19 +329,19 @@ b_tree<tkey, tvalue>::infix_iterator b_tree<tkey, tvalue>::infix_iterator::opera
 template<typename tkey, typename tvalue>
 b_tree<tkey, tvalue>::pair_node_tree& b_tree<tkey, tvalue>::infix_iterator::operator*() const noexcept
 {
-    return (*(_path.top().first)->_pairs_of_node[_index]);
+    return ((*(_path.top().first))->_pairs_of_node[_index]);
 }
 
 template<typename tkey, typename tvalue>
 b_tree<tkey, tvalue>::pair_node_tree* b_tree<tkey, tvalue>::infix_iterator::operator->() const noexcept
 {
-    return &(*(_path.top().first)->_pairs_of_node[_index]);
+    return &((*(_path.top().first))->_pairs_of_node[_index]);
 }
 
 template<typename tkey, typename tvalue>
 bool b_tree<tkey, tvalue>::infix_iterator::is_term_node() const noexcept
 {
-    return (_path.empty()) || (*(_path.top().first) == nullptr)  || (*(_path.top().first)->subtrees[0] == nullptr);
+    return (_path.empty()) || (*(_path.top().first) == nullptr)  || ((*(_path.top().first))->_subtrees[0] == nullptr);
 }
 
 template<typename tkey, typename tvalue>
@@ -447,9 +394,9 @@ void b_tree<tkey, tvalue>::insert(tkey const &key, tvalue const &value)/////////
 {
     auto path = find_path(key);
 
-    if(path.second.second == true && _insert_exist_strategy == insertion_of_existent_key_attempt_strategy::throw_an_exception)
+    if(path.second.second == true )
     {
-        throw insertion_of_existent_key_attempt_exception(key);
+        throw std::logic_error("Attempt to insert already existing key inside the tree.");
     }
     else
     {
@@ -464,9 +411,9 @@ void b_tree<tkey, tvalue>::insert(tkey const &key,tvalue &&value)
 {
     auto path = find_path(key);
 
-    if(path.second.second == true && _insert_exist_strategy == insertion_of_existent_key_attempt_strategy::throw_an_exception)
+    if(path.second.second == true )
     {
-        throw insertion_of_existent_key_attempt_exception(key);
+        throw std::logic_error("Attempt to insert already existing key inside the tree.");
     }
     else
     {
@@ -489,21 +436,18 @@ void b_tree<tkey, tvalue>::insert_inside(b_tree::pair_node_tree &&data, std::sta
 
         _root = new_node;
 
+        check_tree(_root,0);
+
         return;
     }
 
     auto [index, found] = find_index(data.first, *path.top().first);
 
-//    auto tmp = pair_node_tree() ;
-//
-//    auto temp = tmp.first;
-
-
-
     if(found)
     {
-        allocator::destruct(&((*(path.top().first))->_pairs_of_node[index].second));////////////////////////////////////////////////////////////////////////////////////////////
+        allocator::destruct(&((*(path.top().first))->_pairs_of_node[index].second));
         allocator::construct(&((*(path.top().first))->_pairs_of_node[index].second), std::move(data.second));
+        check_tree(_root,0);
         return;
     }
 
@@ -516,10 +460,12 @@ void b_tree<tkey, tvalue>::insert_inside(b_tree::pair_node_tree &&data, std::sta
         split_node(path, node, index);
     }
 
+    check_tree(_root,0);
+
 }
 
 template<typename tkey, typename tvalue>
-void b_tree<tkey, tvalue>::split_node(std::stack<std::pair<btree_node**, size_t>> &path, b_tree::btree_node *&node,size_t index)
+void b_tree<tkey, tvalue>::split_node(std::stack<std::pair<btree_node**, size_t>> &path, btree_node *&node,size_t& index)
 {
     btree_node* new_node = create_btree_node(_t);
 
@@ -596,32 +542,322 @@ template<
 tvalue const &b_tree<tkey, tvalue>::obtain(
     tkey const &key)
 {
-    std::cout<<"todo"<<std::endl;
-    return tvalue();
+    auto path = find_path(key);
+
+    if(path.second.second == false)
+    {
+        throw std::logic_error("You wanna find non existing value!");
+    }
+    else
+    {
+        return ((*(path.first.top().first))->_pairs_of_node[path.second.first]).second;
+    }
 }
 
-template<
-    typename tkey,
-    typename tvalue>
-tvalue b_tree<tkey, tvalue>::dispose(
-    tkey const &key)
+template<typename tkey, typename tvalue>
+tvalue b_tree<tkey, tvalue>::dispose(tkey const &key)
 {
-    std::cout<<"todo"<<std::endl;
-    return tvalue();
+    auto path = find_path(key);
+
+    if(path.second.second == false )
+    {
+        throw std::logic_error("Attempt to dispose non existing value!");
+    }
+
+//    check_tree(_root, 0);
+
+    return dispose_inside(path.first, path.second.first);
 }
 
-template<
-    typename tkey,
-    typename tvalue>
+template<typename tkey, typename tvalue>
+tvalue b_tree<tkey, tvalue>::dispose_inside(std::stack<std::pair<btree_node**, size_t>> &path,size_t& index) noexcept
+{
+    tvalue res = (*(path.top().first))->_pairs_of_node[index].second;
+
+    if(!is_terma(*path.top().first))
+    {
+        btree_node* tmp = *path.top().first;
+
+        path.push(std::make_pair(&(*path.top().first)->_subtrees[index], index));
+
+        while(!is_terma(*path.top().first))
+        {
+            path.push(std::make_pair(&(*path.top().first)->_subtrees[(*path.top().first)->_virtual_size], (*path.top().first)->_virtual_size ));
+
+        }
+
+        std::swap(tmp->_pairs_of_node[index], (*path.top().first)->_pairs_of_node[(*path.top().first)->_virtual_size - 1]);
+        index = (*path.top().first)->_virtual_size - 1;
+    }
+
+    remove_from_btree_node(*path.top().first, index);
+
+    btree_node* node = *path.top().first;
+
+    while(!path.empty() && (*path.top().first)->_virtual_size < _min_keys_in_node)
+    {
+        rebalance_node(path, node, index);
+    }
+
+    if(node == nullptr)
+    {
+        return {};
+    }
+
+//    auto result = find_path(node->_pairs_of_node[index].first);
+//
+//    return (*(result.first.top().first))->_pairs_of_node[result.second.first].second;
+
+    check_tree(_root, 0);
+
+    return res;
+}
+
+
+template<typename tkey, typename tvalue>
+void b_tree<tkey, tvalue>::rebalance_node(std::stack<std::pair<btree_node**, size_t>> &path, b_tree::btree_node *&node, size_t &index)
+{
+    if(path.empty())
+    {
+        return;
+    }
+    if(path.size() == 1)
+    {
+        if((*path.top().first)->_virtual_size == 0)
+        {
+            destroy_btree_node(*path.top().first);
+            *path.top().first = nullptr;
+            node = nullptr;
+        }
+        path.pop();
+        return;
+    }
+    else
+    {
+        auto pair = path.top();
+        auto current_node = *pair.first;
+        path.pop();
+
+        bool need_key = true;
+
+        if(pair.second > 0)
+        {
+            btree_node* bro = (*path.top().first)->_subtrees[pair.second - 1];
+
+            if(bro->_virtual_size > _min_keys_in_node)
+            {
+                auto tmp = (*path.top().first)->_pairs_of_node[pair.second - 1];
+                std::swap((*path.top().first)->_pairs_of_node[pair.second - 1], bro->_pairs_of_node[bro->_virtual_size - 1]);
+
+                auto tmp_ptr = remove_from_btree_node(bro, bro->_virtual_size -1, false);
+
+                std::swap(current_node->_subtrees[0], tmp_ptr);
+
+                insert_in_btree_node(current_node, tmp_ptr, std::move(tmp), 0);
+
+                ++index;
+
+                need_key = false;
+            }
+        }
+
+        if(need_key && pair.second < (*path.top().first)->_virtual_size)
+        {
+            btree_node* bro = (*path.top().first)->_subtrees[pair.second + 1];
+
+            if (bro->_virtual_size > _min_keys_in_node)
+            {
+                auto tmp = (*path.top().first)->_pairs_of_node[pair.second];
+                std::swap((*path.top().first)->_pairs_of_node[pair.second], bro->_pairs_of_node[0]);
+
+                auto tmp_ptr = remove_from_btree_node(bro, 0);
+
+                insert_in_btree_node(current_node, tmp_ptr, std::move(tmp), current_node->_virtual_size);
+
+                need_key = false;
+            }
+        }
+
+        if (need_key)
+        {
+            btree_node* parent = *path.top().first;
+            btree_node* left = pair.second > 0 ? parent->_subtrees[pair.second - 1] : current_node;
+            btree_node* right = pair.second > 0 ? current_node : parent->_subtrees[pair.second + 1];
+            size_t parent_index = pair.second > 0 ? pair.second - 1 : pair.second;
+            if (pair.second > 0)
+            {
+                node = left;
+                index += left->_virtual_size + 1;
+            }
+
+            auto tmp_data = parent->_pairs_of_node[parent_index];
+
+            insert_in_btree_node(left, right->_subtrees[0], std::move(tmp_data), left->_virtual_size);
+
+            for (size_t i = 0; i < right->_virtual_size; ++i)
+            {
+                insert_in_btree_node(left, right->_subtrees[i + 1], std::move(right->_pairs_of_node[i]), left->_virtual_size);
+            }
+
+            remove_from_btree_node(parent, parent_index, false);
+
+            destroy_btree_node(right);
+
+            if (path.size() == 1 && (*path.top().first)->_virtual_size == 0)
+            {
+                path.pop();
+                destroy_btree_node(parent);
+                _root = left;
+            }
+        }
+
+
+    }
+}
+
+template<typename tkey,typename tvalue>
 std::vector<typename associative_container<tkey, tvalue>::key_value_pair> b_tree<tkey, tvalue>::obtain_between(
     tkey const &lower_bound,
     tkey const &upper_bound,
     bool lower_bound_inclusive,
     bool upper_bound_inclusive)
 {
-    std::cout<<"todo"<<std::endl;
-    return std::vector<typename associative_container<tkey, tvalue>::key_value_pair>();
+    if(search_tree<tkey, tvalue>::_keys_comparer(upper_bound, lower_bound) < 0)
+    {
+        throw std::logic_error("upper less lower!");
+    }
+    if(_root == nullptr)
+    {
+        return std::vector<typename associative_container<tkey, tvalue>::key_value_pair>();
+    }
 
+
+    auto [stk, pair2] = find_path(lower_bound);
+
+    size_t index = pair2.first;
+
+    btree_node* node = *(stk.top().first);
+
+    infix_iterator begin(stk, index);
+
+    if(!exist(node, index))
+    {
+        auto [inner_index, found] = find_index(lower_bound, node);
+
+        if(inner_index > node->_virtual_size - 1)
+        {
+            inner_index = node->_virtual_size - 1;
+        }
+
+        begin.update_index(inner_index);
+    }
+
+    while(begin != end_infix() && search_tree<tkey, tvalue>::_keys_comparer(lower_bound, begin->first))
+    {
+        ++begin;
+    }
+
+    if(begin == end_infix())
+    {
+        return std::vector<typename associative_container<tkey, tvalue>::key_value_pair>();
+    }
+
+    bool found_ones = false;
+
+    if(!search_tree<tkey, tvalue>::_keys_comparer(begin->first, lower_bound))
+    {
+        if(!lower_bound_inclusive)
+        {
+            ++begin;
+        }
+        else
+        {
+            found_ones = true;
+        }
+    }
+
+    auto [stk2, pair3] = find_path(upper_bound);
+
+    btree_node* node_end = *(stk.top().first);
+
+    size_t index_end = pair3.first;
+
+    infix_iterator end(stk2, index_end);
+
+    if (!exist(node_end, index_end))
+    {
+        auto [in_ind, found] = find_index(lower_bound, node);
+        if (in_ind > node->_virtual_size - 1)
+        {
+            in_ind = node->_virtual_size - 1;
+        }
+
+        end.update_index(in_ind);
+    }
+
+    while (begin != end && search_tree<tkey, tvalue>::_keys_comparer(end->first, upper_bound))
+    {
+        --end;
+    }
+
+    if (!search_tree<tkey, tvalue>::_keys_comparer(upper_bound, end->first))
+    {
+        if (!upper_bound_inclusive)
+        {
+            if (begin != end)
+                --end;
+        } else
+        {
+            found_ones = true;
+        }
+    }
+
+    if (begin != end)
+        found_ones = true;
+
+    std::vector<typename associative_container<tkey, tvalue>::key_value_pair> result;
+
+    while(begin != end)
+    {
+        result.emplace_back(begin->first, begin->second);
+        ++begin;
+    }
+
+    return result;
+
+}
+
+
+template<typename tkey, typename tvalue>
+void b_tree<tkey, tvalue>::update(const tkey &key, tvalue const& value)
+{
+    auto path = find_path(key);
+
+    if(path.second.second == false )
+    {
+        throw std::logic_error("Attempt to update not existing key inside the tree ");
+    }
+    else
+    {
+        pair_node_tree pair(key, std::move(value));
+        insert_inside(std::move(pair), path.first);
+    }
+}
+
+template<typename tkey, typename tvalue>
+void b_tree<tkey, tvalue>::update(const tkey &key, tvalue &&value)
+{
+    auto path = find_path(key);
+
+    if(path.second.second == false )
+    {
+        throw std::logic_error("Attempt to update not existing key inside the tree ");
+    }
+    else
+    {
+        pair_node_tree pair(key, std::move(value));
+        insert_inside(std::move(pair), path.first);
+    }
 }
 
 template<
@@ -631,9 +867,7 @@ b_tree<tkey, tvalue>::b_tree(
     size_t t,
     std::function<int(tkey const &, tkey const &)> keys_comparer,
     allocator *allocator,
-    logger *logger,
-    typename b_tree<tkey, tvalue>::insertion_of_existent_key_attempt_strategy insertion_strategy,
-    typename b_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_strategy disposal_strategy) : search_tree<tkey, tvalue>(keys_comparer, logger, allocator), _t(t), _root(nullptr), _size(0), _insert_exist_strategy(insertion_strategy), _dispose_nonexist_strategy(disposal_strategy)
+    logger *logger) : search_tree<tkey, tvalue>(keys_comparer, logger, allocator), _t(t), _root(nullptr), _size(0)
 {
     if(_t < 2)
     {
@@ -647,7 +881,7 @@ template<
     typename tkey,
     typename tvalue>
 b_tree<tkey, tvalue>::b_tree(
-    b_tree<tkey, tvalue> const &other) : search_tree<tkey, tvalue>(other), _size(other._size), _t(other._t), _insert_exist_strategy(other._insert_exist_strategy), _dispose_nonexist_strategy(other._dispose_nonexist_strategy)
+    b_tree<tkey, tvalue> const &other) : search_tree<tkey, tvalue>(other), _size(other._size), _t(other._t)
 
 {
     _max_keys_in_node = other._max_keys_in_node;
@@ -668,15 +902,14 @@ b_tree<tkey, tvalue> &b_tree<tkey, tvalue>::operator=(b_tree<tkey, tvalue> const
         _size = other._size;
         _max_keys_in_node = other._max_keys_in_node;
         _min_keys_in_node = other._min_keys_in_node;
-        _insert_exist_strategy = other._insert_exist_strategy;
-        _dispose_nonexist_strategy = other._dispose_nonexist_strategy;
+
     }
     return *this;
 }
 
 template<typename tkey, typename tvalue>
 b_tree<tkey, tvalue>::b_tree(
-    b_tree<tkey, tvalue> &&other) noexcept : search_tree<tkey, tvalue>(other), _root(other._root), _t(other._t), _size(other._size), _insert_exist_strategy(other._insert_exist_strategy), _dispose_nonexist_strategy(other._dispose_nonexist_strategy)
+    b_tree<tkey, tvalue> &&other) noexcept : search_tree<tkey, tvalue>(other), _root(other._root), _t(other._t), _size(other._size)
 {
     _max_keys_in_node = other._max_keys_in_node;
     _min_keys_in_node = other._min_keys_in_node;
@@ -700,8 +933,6 @@ b_tree<tkey, tvalue> &b_tree<tkey, tvalue>::operator=(
         std::swap(_t, other._t);
         std::swap(_max_keys_in_node, other._max_keys_in_node);
         std::swap(_min_keys_in_node, other._min_keys_in_node);
-        std::swap(_insert_exist_strategy, other._insert_exist_strategy);
-        std::swap(_dispose_nonexist_strategy, other._dispose_nonexist_strategy);
     }
     return *this;
 }
@@ -715,7 +946,7 @@ b_tree<tkey, tvalue>::~b_tree()
 }
 
 template<typename tkey, typename tvalue>
-typename b_tree<tkey, tvalue>::btree_node* b_tree<tkey, tvalue>::copy_subtree(b_tree::btree_node *parent, b_tree::btree_node *copirka)// TODO mb remove parent...
+typename b_tree<tkey, tvalue>::btree_node* b_tree<tkey, tvalue>::copy_subtree(b_tree::btree_node *parent, b_tree::btree_node *copirka)
 {
     if(copirka == nullptr)
     {
@@ -893,11 +1124,11 @@ std::pair<size_t, bool> b_tree<tkey, tvalue>::find_index(const tkey &key, b_tree
 
     if(search_tree<tkey, tvalue>::_keys_comparer(key, node->_pairs_of_node[begin].first))
     {
-        return std::make_pair(begin + 1, false);//>
+        return std::make_pair(begin , false);//>
     }
     else
     {
-        return std::make_pair(begin, false);//<
+        return std::make_pair(begin + 1, false);//<
     }
 
 }
@@ -988,46 +1219,54 @@ typename b_tree<tkey, tvalue>::btree_node* b_tree<tkey, tvalue>::remove_from_btr
         current_node->_subtrees[0] = nullptr;
     }
 
+//    check_tree(_root, 0);
+
     return parrot;
 }
 
 
 template<typename tkey, typename tvalue>
-b_tree<tkey, tvalue>::insertion_of_existent_key_attempt_exception::insertion_of_existent_key_attempt_exception(const tkey &key) :
-    std::logic_error("Attempt to insert already existing key inside the tree."), _key(key) {}
-
-
-template<typename tkey, typename tvalue>
-tkey const &b_tree<tkey, tvalue>::insertion_of_existent_key_attempt_exception::get_key() const noexcept
+void b_tree<tkey, tvalue>::check_tree(btree_node *node, size_t depth)
 {
-    return _key;
+	if (node == nullptr)
+		return;
+	if (!is_terma(node))
+	{
+		check_tree(node->_subtrees[0], depth + 1);
+	}
+    std::string tab;
+    tab.reserve(depth);
+	for (size_t j = 0; j < depth; ++j)
+	{
+		tab += '\t';
+	}
+	std::cout << tab << std::to_string(node->_pairs_of_node[0].first) << std::endl;
+	for(size_t i = 1; i < node->_virtual_size; ++i)
+	{
+		if (!search_tree<tkey, tvalue>::_keys_comparer((node->_pairs_of_node[i - 1]).first, (node->_pairs_of_node[i]).first))
+			throw std::logic_error("B");
+		if (!is_terma(node))
+		{
+			check_tree(node->_subtrees[i], depth + 1);
+		}
+		std::cout << tab << std::to_string(node->_pairs_of_node[i].first) << std::endl;
+	}
+
+	if (!is_terma(node))
+	{
+		check_tree(node->_subtrees[node->_virtual_size], depth + 1);
+	}
+
+	if (depth == 0)
+		std::cout << std::endl << std:: endl;
 }
 
 template<typename tkey, typename tvalue>
-b_tree<tkey, tvalue>::obtaining_of_nonexistent_key_attempt_exception::obtaining_of_nonexistent_key_attempt_exception(
-        tkey const &key):
-        std::logic_error("Attempt to obtain a value by non-existing key from the tree."), _key(key) {}
-
-template<typename tkey,typename tvalue>
-tkey const &b_tree<tkey, tvalue>::obtaining_of_nonexistent_key_attempt_exception::get_key() const noexcept
+bool b_tree<tkey, tvalue>::exist(b_tree::btree_node *node, size_t index) noexcept
 {
-    return _key;
+    return node != nullptr && index < (node->_virtual_size + 1);
 }
 
-template<
-        typename tkey,
-        typename tvalue>
-b_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_exception::disposal_of_nonexistent_key_attempt_exception(
-        tkey const &key):
-        std::logic_error("Attempt to dispose a value by non-existing key from the tree."), _key(key) {}
-
-template<
-        typename tkey,
-        typename tvalue>
-tkey const &b_tree<tkey, tvalue>::disposal_of_nonexistent_key_attempt_exception::get_key() const noexcept
-{
-    return _key;
-}
 
 
 

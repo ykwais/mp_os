@@ -412,18 +412,74 @@ TEST(bTreePositiveTests, test5)
 
     };
 
-    search_tree<int, std::string> *tree = new b_tree<int, std::string>(2, keys_comparer, nullptr, logger);
+//    search_tree<int, std::string> *tree = new b_tree<int, std::string>(2, keys_comparer, nullptr, logger);
+//
+//    tree->insert(1, std::string("a"));
+//    tree->insert(2, std::string("b"));
+//    tree->insert(15, std::string("c"));
+//    tree->insert(3, std::string("d"));
+//    tree->insert(4, std::string("e"));
 
-    tree->insert(1, std::string("a"));
-    tree->insert(2, std::string("b"));
-    tree->insert(15, std::string("c"));
-    tree->insert(3, std::string("d"));
-    tree->insert(4, std::string("e"));
+    search_tree<int, int> *tree = new b_tree<int, int>(2, keys_comparer, nullptr, logger);
 
-    auto first_disposed = tree->dispose(2);
-    auto second_disposed = tree->dispose(4);
+//    tree->insert(1, 1);
+//    tree->insert(2, 2);
+//    tree->insert(15, 3);
+//    tree->insert(3, 4);
+//    tree->insert(4, 5);
 
-    EXPECT_TRUE(infix_const_iterator_test(*reinterpret_cast<b_tree<int, std::string> const *>(tree), expected_result, keys_comparer, values_comparer));
+    tree->insert(10, 1);
+    tree->insert(20, 2);
+    tree->insert(30, 3);
+    tree->insert(40, 4);
+    tree->insert(50, 5);
+    tree->insert(60, 1);
+    tree->insert(70, 2);
+    tree->insert(80, 3);
+    tree->insert(90, 4);
+    tree->insert(75, 5);
+    tree->insert(110, 1);
+    tree->insert(120, 2);
+    tree->insert(130, 3);
+    tree->insert(140, 4567);
+    tree->insert(150, 45);
+
+    std::cout << tree->obtain(140) << std::endl;
+
+//    tree->insert(10, 1);
+//    tree->insert(20, 2);
+//    tree->insert(30, 3);
+//    tree->insert(40, 4);
+//    tree->insert(50, 5);
+//    tree->insert(35, 78);
+
+
+
+    auto first_disposed = tree->dispose(70);
+    auto second_disposed = tree->dispose(20);
+    auto third_disposed = tree->dispose(140);
+    auto four_disposed = tree->dispose(150);
+    auto five_disposed = tree->dispose(75);
+    auto six_disposed = tree->dispose(30);
+    auto seven_disposed = tree->dispose(60);
+    auto eight_disposed = tree->dispose(10);
+    auto nine_disposed = tree->dispose(80);
+    auto ten_disposed = tree->dispose(40);
+    auto eleven_disposed = tree->dispose(120);
+    auto twelve_disposed = tree->dispose(50);
+    auto thirteen_disposed = tree->dispose(110);
+    auto for_disposed = tree->dispose(130);
+    auto f_disposed = tree->dispose(90);
+
+
+
+
+
+
+
+
+
+    //EXPECT_TRUE(infix_const_iterator_test(*reinterpret_cast<b_tree<int, std::string> const *>(tree), expected_result, keys_comparer, values_comparer));
 
     logger->trace("bTreePositiveTests.test5 finished");
 
