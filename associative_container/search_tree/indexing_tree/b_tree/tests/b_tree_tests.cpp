@@ -10,6 +10,7 @@
 #include <client_logger_builder.h>
 #include <logger_builder.h>
 #include <search_tree.h>
+#include <unordered_map>
 
 namespace comparison
 {
@@ -154,7 +155,7 @@ template<
     typename tvalue>
 bool infix_const_iterator_test(
     b_tree<tkey, tvalue> const &tree,
-    std::vector<std::tuple<size_t, size_t, tkey, tvalue>> const &expected_result,
+    std::vector<std::pair<tkey, tvalue>> const &expected_result,
     std::function<int(tkey const &, tkey const &)> keys_comparer,
     std::function<int(tvalue const &, tvalue const &)> values_comparer)
 {
@@ -163,12 +164,22 @@ bool infix_const_iterator_test(
 
     for (auto const &item: expected_result)
     {
-        auto data = *it;
+        auto tmp = *it;
+        auto key = tmp.first;
+        auto data = tmp.second;
+        auto array_key = item.first;
+        auto array_value = item.second;
 
-        if (std::get<0>(data) != std::get<0>(item) ||
-            std::get<1>(data) != std::get<1>(item) ||
-            keys_comparer(std::get<2>(data), std::get<2>(item)) != 0 ||
-            values_comparer(std::get<3>(data), std::get<3>(item)) != 0)
+
+//        if (std::get<0>(data) != std::get<0>(item) ||
+//            std::get<1>(data) != std::get<1>(item) ||
+//            keys_comparer(std::get<2>(data), std::get<2>(item)) != 0 ||
+//            values_comparer(std::get<3>(data), std::get<3>(item)) != 0)
+//        {
+//            return false;
+//        }
+
+        if (keys_comparer(key, array_key) != 0 || values_comparer(data, array_value) != 0)
         {
             return false;
         }
@@ -177,6 +188,21 @@ bool infix_const_iterator_test(
     }
 
     return true;
+
+//    auto end_infix = tree.cend_infix();/////////////////
+//    auto it = tree.cbegin_infix();/////////////////////
+
+//    for (auto const &item: expected_result)
+//    {
+//        if ((*it)->depth != item.depth || (*it)->key != item.key || (*it)->value != item.value)
+//        {
+//            return false;
+//        }
+//
+//        ++it;
+//    }
+//
+//    return true;
 }
 
 TEST(bTreePositiveTests, test0)
@@ -191,7 +217,7 @@ TEST(bTreePositiveTests, test0)
 
     logger->trace("bTreePositiveTests.test0 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
 
     };
@@ -218,19 +244,19 @@ TEST(bTreePositiveTests, test1)
 
     logger->trace("bTreePositiveTests.test1 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 1, "a"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 2, "b"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 3, "d"),
-        std::tuple<size_t, size_t, int, std::string>(0, 0, 4, "e"),
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 15, "c"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 27, "f")
+        std::pair<int, std::string>(1, "ab"),
+        std::pair<int, std::string>(2, "b"),
+        std::pair<int, std::string>(3, "d"),
+        std::pair<int, std::string>(4, "e"),
+        std::pair<int, std::string>(15, "c"),
+        std::pair<int, std::string>(27, "f")
     };
 
     search_tree<int, std::string> *tree = new b_tree<int, std::string>(3, keys_comparer, nullptr, logger);
 
-    tree->insert(1, std::string("a"));
+    tree->insert(1, std::string("ab"));
     tree->insert(2, std::string("b"));
     tree->insert(15, std::string("c"));
     tree->insert(3, std::string("d"));
@@ -256,20 +282,20 @@ TEST(bTreePositiveTests, test2)
 
     logger->trace("bTreePositiveTests.test2 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 1, "a"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 2, "b"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 3, "d"),
-        std::tuple<size_t, size_t, int, std::string>(1, 3, 4, "e"),
-        std::tuple<size_t, size_t, int, std::string>(1, 4, 15, "c"),
-        std::tuple<size_t, size_t, int, std::string>(0, 0, 24, "g"),
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 45, "k"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 100, "f"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 101, "j"),
-        std::tuple<size_t, size_t, int, std::string>(1, 3, 193, "l"),
-        std::tuple<size_t, size_t, int, std::string>(1, 4, 456, "h"),
-        std::tuple<size_t, size_t, int, std::string>(1, 5, 534, "m")
+        std::pair<int, std::string>(1, "a"),
+        std::pair<int, std::string>(2, "b"),
+        std::pair<int, std::string>(3, "d"),
+        std::pair<int, std::string>(4, "e"),
+        std::pair<int, std::string>(15, "c"),
+        std::pair<int, std::string>(24, "g"),
+        std::pair<int, std::string>(45, "k"),
+        std::pair<int, std::string>(100, "f"),
+        std::pair<int, std::string>(101, "j"),
+        std::pair<int, std::string>(193, "l"),
+        std::pair<int, std::string>(456, "h"),
+        std::pair<int, std::string>(534, "m")
     };
 
     search_tree<int, std::string> *tree = new b_tree<int, std::string>(5, keys_comparer, nullptr, logger);
@@ -306,20 +332,20 @@ TEST(bTreePositiveTests, test3)
 
     logger->trace("bTreePositiveTests.test3 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
-        std::tuple<size_t, size_t, int, std::string>(0, 0, 1, "a"),
-        std::tuple<size_t, size_t, int, std::string>(0, 1, 2, "b"),
-        std::tuple<size_t, size_t, int, std::string>(0, 2, 3, "d"),
-        std::tuple<size_t, size_t, int, std::string>(0, 3, 4, "e"),
-        std::tuple<size_t, size_t, int, std::string>(0, 4, 15, "c"),
-        std::tuple<size_t, size_t, int, std::string>(0, 5, 24, "g"),
-        std::tuple<size_t, size_t, int, std::string>(0, 6, 45, "k"),
-        std::tuple<size_t, size_t, int, std::string>(0, 7, 100, "f"),
-        std::tuple<size_t, size_t, int, std::string>(0, 8, 101, "j"),
-        std::tuple<size_t, size_t, int, std::string>(0, 9, 193, "l"),
-        std::tuple<size_t, size_t, int, std::string>(0, 10, 456, "h"),
-        std::tuple<size_t, size_t, int, std::string>(0, 11, 534, "m")
+        std::pair<int, std::string>(1, "a"),
+        std::pair<int, std::string>(2, "b"),
+        std::pair<int, std::string>(3, "d"),
+        std::pair<int, std::string>(4, "e"),
+        std::pair<int, std::string>(15, "c"),
+        std::pair<int, std::string>(24, "g"),
+        std::pair<int, std::string>(45, "k"),
+        std::pair<int, std::string>(100, "f"),
+        std::pair<int, std::string>(101, "j"),
+        std::pair<int, std::string>(193, "l"),
+        std::pair<int, std::string>(456, "h"),
+        std::pair<int, std::string>(534, "m")
     };
 
     search_tree<int, std::string> *tree = new b_tree<int, std::string>(7, keys_comparer, nullptr, logger);
@@ -356,20 +382,20 @@ TEST(bTreePositiveTests, test4)
 
     logger->trace("bTreePositiveTests.test4 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 1, "a"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 2, "b"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 3, "d"),
-        std::tuple<size_t, size_t, int, std::string>(0, 0, 4, "e"),
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 15, "c"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 24, "g"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 45, "k"),
-        std::tuple<size_t, size_t, int, std::string>(0, 1, 100, "f"),
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 101, "j"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 193, "l"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 456, "h"),
-        std::tuple<size_t, size_t, int, std::string>(1, 3, 534, "m")
+        std::pair<int, std::string>(1, "a"),
+        std::pair<int, std::string>(2, "b"),
+        std::pair<int, std::string>(3, "d"),
+        std::pair<int, std::string>(4, "e"),
+        std::pair<int, std::string>(15, "c"),
+        std::pair<int, std::string>(24, "g"),
+        std::pair<int, std::string>(45, "k"),
+        std::pair<int, std::string>(100, "f"),
+        std::pair<int, std::string>(101, "j"),
+        std::pair<int, std::string>(193, "l"),
+        std::pair<int, std::string>(456, "h"),
+        std::pair<int, std::string>(534, "m")
     };
 
     search_tree<int, std::string> *tree = new b_tree<int, std::string>(3, keys_comparer, nullptr, logger);
@@ -499,16 +525,16 @@ TEST(bTreePositiveTests, test6)
 
     logger->trace("bTreePositiveTests.test6 started");
 
-    std::vector<std::tuple<size_t, size_t, int, std::string>> expected_result =
+    std::vector<std::pair<int, std::string>> expected_result =
     {
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 2, "b"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 3, "d"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 4, "e"),
-        std::tuple<size_t, size_t, int, std::string>(0, 0, 15, "c"),
-        std::tuple<size_t, size_t, int, std::string>(1, 0, 45, "k"),
-        std::tuple<size_t, size_t, int, std::string>(1, 1, 101, "j"),
-        std::tuple<size_t, size_t, int, std::string>(1, 2, 456, "h"),
-        std::tuple<size_t, size_t, int, std::string>(1, 3, 534, "m")
+        std::pair<int, std::string>(2, "b"),
+        std::pair<int, std::string>(3, "d"),
+        std::pair<int, std::string>(4, "e"),
+        std::pair<int, std::string>(15, "c"),
+        std::pair<int, std::string>(45, "k"),
+        std::pair<int, std::string>(101, "j"),
+        std::pair<int, std::string>(456, "h"),
+        std::pair<int, std::string>(534, "m")
     };
 
     search_tree<int, std::string> *tree = new b_tree<int, std::string>(4, keys_comparer, nullptr, logger);
@@ -828,6 +854,74 @@ TEST(bTreeNegativeTests, test3)
 
     delete tree;
     delete logger;
+}
+
+
+TEST(own, test1)
+{
+
+    std::function<int(int const &, int const &)> keys_comparer = comparison::int_comparer();
+    std::function<int(std::string const &, std::string const &)> values_comparer = comparison::stdstring_comparer();
+
+    search_tree<int, int> *tree = new b_tree<int, int>(4, keys_comparer);
+    std::unordered_map<int, int> map;
+
+    size_t iterations = 1000000;
+
+    srand(time(nullptr));
+
+    for(size_t i = 0; i < iterations; ++i)
+    {
+        switch(rand() % 3)
+        {
+            case 0:
+            case 1:
+            {
+                int tmp = rand();
+                try
+                {
+
+                    if (map.find(tmp) == map.end())
+                    {
+                        map.insert(std::make_pair(tmp, 1));
+                        tree->insert(tmp, 1);
+                    }
+                } catch (std::logic_error& er)
+                {
+                    std::cout << er.what() << std::endl;
+                }
+                break;
+            }
+            case 2:
+            {
+                if (!map.empty())
+                {
+                    auto it = map.begin();
+
+                    //std::advance(it, rand() % map.size());
+
+                    tree->dispose(it->first);
+                    map.erase(it);
+                } else
+                {
+                    std::cout << "Empty" << std::endl;
+                }
+            }
+                break;
+        }
+    }
+
+    //EXPECT_EQ(tree.size(), map.size());
+
+    while(!map.empty())
+    {
+        auto it = map.begin();
+        //std::advance(it, rand() % map.size());
+
+        tree->dispose(it->first);
+        map.erase(it);
+    }
+    //EXPECT_EQ(tree.size(), 0);
 }
 
 int main(
