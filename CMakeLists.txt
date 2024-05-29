@@ -10,7 +10,7 @@ include(C:/proga/vcpkg/scripts/buildsystems/vcpkg.cmake)
 endif (WIN32)
 
 add_subdirectory(allocator)
-# add_subdirectory(arithmetic)
+add_subdirectory(arithmetic)
 add_subdirectory(associative_container)
 add_subdirectory(common)
 add_subdirectory(logger)
