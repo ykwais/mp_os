@@ -842,7 +842,7 @@ TEST(own, test1)
 //    rb->dispose(188);
 
 
-    rb->insert(290, 1);
+    rb->insert(290,  1);
     rb->insert(241, 1);
     rb->insert(297, 1);
     rb->insert(236, 1);
@@ -857,7 +857,7 @@ TEST(own, test2)
     red_black_tree<int, int> tree{key_comparer()};
     std::map<int, int> map;
 
-    size_t iterations = 10'000;
+    size_t iterations = 1000000;
 
     srand(time(nullptr));
 

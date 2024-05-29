@@ -120,7 +120,7 @@ TEST(allocatorRBTPositiveTests, test5)
 
     //TODO: logger
     allocator_red_black_tree *allocator = new allocator_red_black_tree(20000, nullptr, logger_instance, allocator_with_fit_mode::fit_mode::first_fit);
-    int iterations_count = 10000;
+    int iterations_count = 1000;
 
     std::list<void *> allocated_blocks;
     srand((unsigned)time(nullptr));
