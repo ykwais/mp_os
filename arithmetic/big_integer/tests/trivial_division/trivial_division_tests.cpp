@@ -2,8 +2,9 @@
 
 #include <sstream>
 
-#include <big_integer.h>
+#include <big_int.h>
 #include <client_logger.h>
+#include <client_logger_builder.h>
 #include <operation_not_supported.h>
 
 logger *create_logger(
@@ -40,9 +41,9 @@ TEST(positive_tests, test1)
                                            },
                                        });
 
-    big_integer bigint_1("2");
-    big_integer bigint_2("3");
-    big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    big_int bigint_1("2");
+    big_int bigint_2("3");
+    bigint_1 /= bigint_2;
 
     EXPECT_TRUE((std::ostringstream() << bigint_1).str() == "0");
 
@@ -59,10 +60,11 @@ TEST(positive_tests, test2)
                                            },
                                        });
 
-    big_integer bigint_1("20944325634363");
-    big_integer bigint_2("0");
+    big_int bigint_1("20944325634363");
+    big_int bigint_2("0");
 
-    EXPECT_THROW(big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial), std::logic_error);
+
+    EXPECT_THROW((bigint_1 /= bigint_2), std::invalid_argument);
 
     delete logger;
 }
@@ -77,10 +79,10 @@ TEST(positive_tests, test3)
                                            },
                                        });
 
-    big_integer bigint_1("001123");
-    big_integer bigint_2("-000000");
+    big_int bigint_1("001123");
+    big_int bigint_2("-000000");
 
-    EXPECT_THROW(big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial), std::logic_error);
+    EXPECT_THROW((bigint_1 /= bigint_2), std::invalid_argument);
 
     delete logger;
 }
@@ -95,9 +97,9 @@ TEST(positive_tests, test4)
                                            },
                                        });
 
-    big_integer bigint_1("-28958888309635818");
-    big_integer bigint_2("-234567");
-    big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    big_int bigint_1("-28958888309635818");
+    big_int bigint_2("-234567");
+    bigint_1 /= bigint_2;
 
     EXPECT_TRUE((std::ostringstream() << bigint_1).str() == "123456787654");
 
@@ -116,10 +118,11 @@ TEST(positive_tests, test5)
 
     std::stringstream iss("806211213 52");
 
-    big_integer bigint_1("0");
-    big_integer bigint_2("0");
+    big_int bigint_1("0");
+    big_int bigint_2("0");
     iss >> bigint_1 >> bigint_2;
-    big_integer result_of_division = big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    //big_integer result_of_division = big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    bigint_1 /= bigint_2;
 
     EXPECT_TRUE((std::ostringstream() << bigint_1).str() == "15504061");
 
@@ -136,9 +139,10 @@ TEST(positive_tests, test6)
                                            },
                                        });
 
-    big_integer bigint_1("123424353464389587244387927589346894576464343235445645674563532464675467425");
-    big_integer bigint_2("2354893245937465784937542389428935349086840957804985309763636567574564");
-    big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    big_int bigint_1("123424353464389587244387927589346894576464343235445645674563532464675467425");
+    big_int bigint_2("2354893245937465784937542389428935349086840957804985309763636567574564");
+    //big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    bigint_1 /= bigint_2;
 
     EXPECT_TRUE((std::ostringstream() << bigint_1).str() == "52411");
 
@@ -155,9 +159,10 @@ TEST(positive_tests, test7)
                                            },
                                        });
 
-    big_integer bigint_1("12342435346438958724438792758934689457646434323544564567456353246467546742553890454890356745895343687456894678934854493068450697557345353");
-    big_integer bigint_2("42389428935349086840957804985309763636567574564");
-    big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    big_int bigint_1("12342435346438958724438792758934689457646434323544564567456353246467546742553890454890356745895343687456894678934854493068450697557345353");
+    big_int bigint_2("42389428935349086840957804985309763636567574564");
+    //big_integer::divide(bigint_1, bigint_2, nullptr, big_integer::division_rule::trivial);
+    bigint_1 /= bigint_2;
 
     EXPECT_TRUE((std::ostringstream() << bigint_1).str() == "291167766502899124008723943300693817184031156313950883875886123638773043440828935681031181");
 

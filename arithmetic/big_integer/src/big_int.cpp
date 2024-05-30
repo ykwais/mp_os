@@ -105,7 +105,7 @@ void big_int::minus_assign_without_sign_reverse(const std::vector<unsigned int> 
 
 bool big_int::need_karatsuba() const noexcept
 {
-    return false;
+    return true;
 }
 
 bool big_int::need_newton() const noexcept
@@ -394,16 +394,16 @@ big_int::div_newton(const std::vector<unsigned int> &lhs, const std::vector<unsi
 }
 
 
-constexpr big_int::big_int(const std::vector<unsigned int> &digits, bool sign) : _digits(digits), _sign(sign) {}
+big_int::big_int(const std::vector<unsigned int> &digits, bool sign) : _digits(digits), _sign(sign) {}
 
-constexpr big_int::big_int(std::vector<unsigned int> &&digits, bool sign) : _digits(std::move(digits)), _sign(sign) {}
+big_int::big_int(std::vector<unsigned int> &&digits, bool sign) : _digits(std::move(digits)), _sign(sign) {}
 
 big_int::operator bool()
 {
     return !_digits.empty();
 }
 
-constexpr big_int::big_int() : _digits(), _sign(true) {}
+big_int::big_int() : _digits(), _sign(true) {}
 
 big_int &big_int::operator++()
 {
@@ -431,7 +431,7 @@ big_int big_int::operator--(int)
     return tmp;
 }
 
-constexpr big_int &big_int::operator+=(const big_int &other)
+big_int &big_int::operator+=(const big_int &other)
 {
     return plus_assign(other);
 }
@@ -489,13 +489,13 @@ big_int big_int::operator^(const big_int &other) const
     return tmp ^= other;
 }
 
-constexpr big_int big_int::operator<<(size_t shift) const
+big_int big_int::operator<<(size_t shift) const
 {
     auto tmp = *this;
     return tmp <<= shift;
 }
 
-constexpr big_int big_int::operator>>(size_t shift) const
+big_int big_int::operator>>(size_t shift) const
 {
     auto tmp = *this;
     return tmp >>= shift;
@@ -521,10 +521,14 @@ big_int big_int::operator~() const
 big_int &big_int::operator&=(const big_int &other)
 {
     if (!_sign && other._sign)
+    {
         _sign = true;
+    }
 
     for(size_t i = 0; i < _digits.size(); ++i)
+    {
         _digits[i] &= i < other._digits.size() ? other._digits[i] : 0;
+    }
 
     optimisation();
     return *this;
@@ -562,7 +566,7 @@ big_int &big_int::operator^=(const big_int &other)
     return *this;
 }
 
-constexpr big_int &big_int::operator<<=(size_t shift)
+big_int &big_int::operator<<=(size_t shift)
 {
     if (shift / (8 * sizeof(unsigned int)) > 0)
     {
@@ -594,7 +598,7 @@ constexpr big_int &big_int::operator<<=(size_t shift)
     return *this;
 }
 
-constexpr big_int &big_int::operator>>=(size_t shift)
+big_int &big_int::operator>>=(size_t shift)
 {
     if (shift / (8 * sizeof(unsigned int)) > 0)
     {
@@ -629,7 +633,7 @@ constexpr big_int &big_int::operator>>=(size_t shift)
     return *this;
 }
 
-constexpr big_int &big_int::plus_assign(const big_int &other, size_t shift)
+big_int &big_int::plus_assign(const big_int &other, size_t shift)
 {
     if (_sign == other._sign)
     {
@@ -641,7 +645,8 @@ constexpr big_int &big_int::plus_assign(const big_int &other, size_t shift)
         {
             _sign = true;
             _digits.clear();
-        } else if (comp == std::strong_ordering::less)
+        }
+        else if (comp == std::strong_ordering::less)
         {
             _sign = !_sign;
             minus_assign_without_sign_reverse(other._digits, _digits, shift);
@@ -699,10 +704,12 @@ big_int &big_int::operator/=(const big_int &other)
     return *this;
 }
 
-constexpr big_int::big_int(const std::string &num, unsigned int radix) : _sign(true), _digits()
+big_int::big_int(const std::string &num, unsigned int radix) : _sign(true), _digits()
 {
     if (radix > 36 || radix < 2)
-        throw std::invalid_argument("Radix must be in interval [2, 36], but is " + std::to_string(radix));
+    {
+        throw std::invalid_argument("degree must belong [2, 36], but is " + std::to_string(radix));
+    }
 
     auto it = num.begin(), end = num.end();
 
@@ -720,7 +727,9 @@ constexpr big_int::big_int(const std::string &num, unsigned int radix) : _sign(t
             char sym = *it;
             unsigned int c = sym >= '0' && sym <= '9' ? sym - '0' : tolower(sym) >= 'a' && tolower(sym) <= 'z' ? tolower(sym) - 'a' + 10 : radix + 1;
             if (c >= radix)
+            {
                 throw std::invalid_argument("Digit must be less then radix");
+            }
 
             std::vector<unsigned int> tmp{radix};
 
@@ -835,7 +844,9 @@ std::vector<big_int> big_int::multiply_vector(const std::vector<big_int> &lhs, s
 void big_int::modulo_vector(std::vector<big_int> &val, size_t power)
 {
     while (val.size() > power)
+    {
         val.pop_back();
+    }
 }
 
 std::vector<big_int> big_int::minus_vectors(const std::vector<big_int> &lhs, const std::vector<big_int> &rhs)
@@ -882,7 +893,7 @@ std::vector<big_int> big_int::multiply_vectors(const std::vector<big_int> &lhs, 
 }
 
 template<std::integral Num>
-constexpr big_int::big_int(Num d) : _sign(true)
+big_int::big_int(Num d) : _sign(true)
 {
     if (d != 0)
     {
