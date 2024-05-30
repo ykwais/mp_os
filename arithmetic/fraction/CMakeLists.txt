@@ -5,7 +5,9 @@ add_subdirectory(tests)
 
 add_library(
         mp_os_arthmtc_frctn
-        src/fraction.cpp)
+        src/fraction.cpp
+        ../big_integer/include/big_int.h
+        tests/tests_fractions.cpp)
 target_include_directories(
         mp_os_arthmtc_frctn
         PUBLIC
@@ -26,7 +28,7 @@ set_target_properties(
         mp_os_arthmtc_frctn PROPERTIES
         LANGUAGES CXX
         LINKER_LANGUAGE CXX
-        CXX_STANDARD 14
+        CXX_STANDARD 23
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
         VERSION 1.0

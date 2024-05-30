@@ -170,6 +170,9 @@ public:
     friend std::istream &operator>>(std::istream &stream, big_int &value);
 
     std::string to_string() const;
+
+public:
+    static big_int factorial(big_int n);
 };
 
 big_int operator""_bi(unsigned long long n);

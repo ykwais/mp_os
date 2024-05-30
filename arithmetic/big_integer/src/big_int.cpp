@@ -912,3 +912,15 @@ big_int operator""_bi(unsigned long long n)
 {
     return n;
 }
+
+big_int big_int::factorial(big_int n)
+{
+    if (n < big_int("0")){
+        throw std::invalid_argument("Must be not negative number");
+    }
+    if (n == big_int("0") || n == big_int("1"))
+    {
+        return big_int("1");
+    }
+    return n * factorial(n-big_int("1"));
+}
