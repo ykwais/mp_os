@@ -5,369 +5,291 @@
 #include <string>
 #include <sstream>
 
-//void big_int::optimisation()
-//{
-//    while(!_digits.empty() && _digits.back() == 0)
-//    {
-//        _digits.pop_back();
-//    }
-//
-//    if(_digits.empty())
-//    {
-//        _sign = true;
-//    }
-//}
-//
-//void big_int::plus_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs, size_t shift)
-//{
-//    if(lhs.size() < rhs.size() + shift)
-//    {
-//        lhs.resize(rhs.size()+shift, 0);
-//    }
-//
-//    unsigned int c = 0;
-//
-//    for(size_t i = 0; i < lhs.size(); ++i)
-//    {
-//        unsigned int a = lhs[i];
-//        unsigned int b = i < shift ? 0 : rhs[i];
-//
-//        unsigned int tmp = (a & mask) + (b & mask) + c;
-//
-//        c = tmp & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
-//
-//        tmp &= mask;
-//
-//        unsigned int tmp2 = ((a >> (sizeof(unsigned int) * 4)) & mask) + ((b >> (sizeof(unsigned int) * 4)) & mask) + c;
-//
-//        c = tmp2 & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
-//
-//        lhs[i] = (tmp2 << (sizeof(unsigned int) * 4)) + tmp;
-//     }
-//
-//    if(c != 0)
-//    {
-//        lhs.push_back(c);
-//    }
-//
-//}
-//
-//void big_int::minus_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs,size_t shift)
-//{
-//    if (lhs.size() < rhs.size() + shift)
-//    {
-//        lhs.resize(rhs.size() + shift, 0);
-//    }
-//
-//    unsigned int c = 0;
-//
-//    for(size_t i = 0; i < lhs.size(); ++i)
-//    {
-//        unsigned int a = lhs[i], b = i < shift ? 0 : rhs[i];
-//
-//        b += c;
-//
-//        if(c != 0 && b == 0)
-//        {
-//            continue;
-//        }
-//
-//        c = b > a;
-//
-//        lhs[i] = a - b;
-//    }
-//}
-//
-//void big_int::minus_assign_without_sign_rev(const std::vector<unsigned int> &lhs, std::vector<unsigned int> &rhs, size_t shift)
-//{
-//    if(rhs.size() < lhs.size() + shift)
-//    {
-//        rhs.resize(rhs.size() + shift, 0);
-//    }
-//
-//    unsigned int c = 0;
-//
-//    for(size_t i = 0; i < rhs.size(); ++i)
-//    {
-//        unsigned int a = i < shift ? 0 : lhs[i], b = rhs[i];
-//        b += c;
-//
-//        if (c != 0 && b == 0)
-//            continue;
-//
-//        c = b > a;
-//
-//        rhs[i] = a - b;
-//    }
-//}
-//
-//bool big_int::need_karatsuba() const noexcept
-//{
-//    return false;
-//}
-//
-//bool big_int::need_newton() const noexcept
-//{
-//    return false;
-//}
-//
-//void big_int::mult_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-//{
-//    if(lhs.empty() || rhs.empty())
-//    {
-//        lhs.clear();
-//        return;
-//    }
-//
-//    lhs = std::move(need_karatsuba() ? mult_karatsuba(lhs, rhs) : mult_common(lhs, rhs));
-//}
-//
-//std::vector<unsigned int> big_int::mult_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-//{
-//    std::vector<unsigned int> result;
-//
-//    for(int i = 0; i < lhs.size(); ++i)
-//    {
-//        for(size_t j = 0; j < rhs.size(); ++j)
-//        {
-//            unsigned int a0 = lhs[i] & mask, a1 = (lhs[i] >> (sizeof(unsigned int) * 4)) & mask, b0 = rhs[i] & mask, b1 = (rhs[i] >> (sizeof(unsigned int)* 4)) & mask;
-//            plus_assign_without_sign(result, summ_of_four(a0 * b0, a1 * b0, a0 * b1, a1 * b1), i + j);
-//        }
-//    }
-//    return result;
-//}
-//
-//std::vector<unsigned int> big_int::summ_of_four(unsigned int a0b0, unsigned int a1b0, unsigned int a0b1, unsigned int a1b1)
-//{
-//    std::vector<unsigned int> first{a0b0}, second{a1b0 << (sizeof(unsigned int) * 4), a1b0 >> (sizeof(unsigned int) * 4)}, third{a0b1 << (sizeof(unsigned int) * 4), a0b1 >> (sizeof(unsigned int) * 4)},
-//            fourth{0, a1b1};
-//
-//    plus_assign_without_sign(first, second);
-//    plus_assign_without_sign(first, third);
-//    plus_assign_without_sign(first, fourth);
-//
-//    return first;
-//}
-//
-//std::vector<unsigned int> big_int::mult_karatsuba(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-//{
-//    auto n = __crutch::next_power_2(std::max(lhs.size(), rhs.size()));
-//
-//    if(n == 1)
-//    {
-//        unsigned int a = lhs.empty() ? 0 : lhs[0], b = rhs.empty() ? 0 : rhs[0];
-//        unsigned int a0 = a & mask, a1 = (a >> (sizeof(unsigned int)*4)) & mask, b0 = b & mask, b1 = (b >> (sizeof(unsigned int)*4)) & mask;
-//        return summ_of_four(a0 * b0, a1*b0, a0 * b1, a1 * b1);
-//    }
-//
-//    std::vector<unsigned int> a0, b0, a1, b1;
-//
-//    a0.reserve(n/2);
-//    a1.reserve(n/2);
-//    b0.reserve(n/2);
-//    b1.reserve(n/2);
-//
-//    for(size_t i = 0; i < n/2; ++i)
-//    {
-//        if(i < lhs.size())
-//        {
-//            a0.push_back(lhs[i]);
-//        }
-//        if(i < rhs.size())
-//        {
-//            b0.push_back(rhs[i]);
-//        }
-//    }
-//
-//    for(size_t i = n/2; i < n; ++i)
-//    {
-//        if(i < lhs.size())
-//        {
-//            a1.push_back(lhs[i]);
-//        }
-//        if(i < rhs.size())
-//        {
-//            b1.push_back(rhs[i]);
-//        }
-//    }
-//
-//    auto a0b0 = mult_karatsuba(a0, b0);
-//    auto a1b1 = mult_karatsuba(a1, b1);
-//    plus_assign_without_sign(a0, a1);
-//    plus_assign_without_sign(b0, b1);
-//    auto other_member = mult_karatsuba(a0, b0);
-//    minus_assign_without_sign(other_member, a0b0);
-//    minus_assign_without_sign(other_member, a1b1);
-//
-//    plus_assign_without_sign(a0b0, other_member, n/2);
-//    plus_assign_without_sign(a0b0, a1b1, n);
-//
-//    return a0b0;
-//}
-//
-//void big_int::devide_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-//{
-//    if (rhs.empty())
-//        throw std::invalid_argument("you wanna device by zero!!!");
-//
-//    if (lhs.empty() || (rhs.size() == 1 && rhs[0] == 1))
-//        return;
-//
-//    if (lhs.size() < rhs.size())
-//    {
-//        lhs.clear();
-//        return;
-//    }
-//
-//    lhs = std::move(need_newton() ? div_newton(lhs, rhs) : div_common(lhs, rhs));
-//}
-//
-//std::vector<unsigned int> big_int::div_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-//{
-//    std::vector<unsigned int> result;
-//    std::vector<unsigned int> vector(rhs.size() - 1, 0);
-//
-//    for(size_t i = 0; i < vector.size(); ++i)
-//    {
-//        vector[i] = lhs[i + lhs.size() - rhs.size() + 1];
-//    }
-//
-//    for(size_t i = lhs.size() - rhs.size(); i >= 0; --i)
-//    {
-//        move_carretka(vector, lhs[i]);
-//        unsigned int d = find_quolitent(vector, rhs);
-//        result.insert(result.begin(), d);
-//        std::vector<unsigned int> tmp{d};
-//        mult_assign_without_sign(tmp, rhs);
-//        minus_assign_without_sign(vector, tmp);
-//    }
-//
-//    return result;
-//}
-//
-//void big_int::move_carretka(std::vector<unsigned int> &vec, unsigned int new_var)
-//{
-//    while(!vec.empty() && vec.back() == 0)
-//    {
-//        vec.pop_back();
-//    }
-//    vec.insert(vec.begin(), new_var);
-//}
-//
-//unsigned int big_int::find_quolitent(const std::vector<unsigned int> &numerator, const std::vector<unsigned int> &denominator) const
-//{
-//    unsigned int res = 0;
-//    std::vector<unsigned int> vec;
-//
-//    for(int i = sizeof(unsigned int) * 8 - 1; i >= 0; --i)
-//    {
-//        auto tmp = res;
-//        res |= 1u << i;
-//        vec.clear();
-//        vec.push_back(res);
-//
-//        mult_assign_without_sign(vec, denominator);
-//
-//        while(!vec.empty() && vec.back() == 0)
-//            vec.pop_back();
-//
-//        auto comp = compare_no_sign(vec, numerator);
-//
-//        if (comp == std::strong_ordering::equal)
-//            return res;
-//        if (comp == std::strong_ordering::greater)
-//            res = tmp;
-//    }
-//
-//    return res;
-//}
-//
-//std::strong_ordering big_int::operator<=>(const big_int &other) const noexcept
-//{
-//    return compare(other, 0);
-//}
-//
-//std::strong_ordering big_int::compare(const big_int &other, size_t shift) const noexcept
-//{
-//    if (_digits.size() == 0 && other._digits.size() == 0)
-//        return std::strong_ordering::equal;
-//    else if (_sign != other._sign)
-//        return _sign ? std::strong_ordering::greater : std::strong_ordering::less;
-//    else
-//    {
-//        auto res = compare_no_sign(_digits, other._digits, shift);
-//
-//        if (_sign)
-//            return res;
-//        else
-//        {
-//            return res == std::strong_ordering::equal ? res : res == std::strong_ordering::less ? std::strong_ordering::greater : std::strong_ordering::less;
-//        }
-//    }
-//}
-//
-//std::strong_ordering
-//big_int::compare_no_sign(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs,
-//                         size_t shift) noexcept
-//{
-//    if (lhs.size() != rhs.size() + shift)
-//    {
-//        return lhs.size() <=> (rhs.size() + shift);
-//    } else if (lhs.size() == 0 && rhs.size() == 0)
-//    {
-//        return std::strong_ordering::equal;
-//    } else
-//    {
-//        auto lbeg = lhs.rbegin(), lend = lhs.rend(), rbeg = rhs.rbegin(), rend = rhs.rend();
-//
-//        for(; lbeg < lend; ++lbeg, ++rbeg)
-//        {
-//            auto l = *lbeg;
-//            auto r = rbeg < rend ? *rbeg : 0;
-//
-//            if (l != r)
-//                return l <=> r;
-//        }
-//
-//        return std::strong_ordering::equal;
-//    }
-//}
-
-std::strong_ordering big_int::operator<=>(const big_int &other) const noexcept
+constexpr void big_int::optimisation() noexcept
 {
-    return compare(other, 0);
+    while(!_digits.empty() && _digits.back() == 0)
+    {
+        _digits.pop_back();
+    }
+
+    if (_digits.empty())
+    {
+        _sign = true;
+    }
+
 }
 
-std::strong_ordering big_int::compare(const big_int &other, size_t shift) const noexcept
+constexpr void big_int::plus_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs, size_t shift)
 {
-    if (_digits.size() == 0 && other._digits.size() == 0)
-        return std::strong_ordering::equal;
-    else if (_sign != other._sign)
-        return _sign ? std::strong_ordering::greater : std::strong_ordering::less;
-    else
+    if (lhs.size() < rhs.size() + shift)
     {
-        auto res = compare_no_sign(_digits, other._digits, shift);
+        lhs.resize(rhs.size() + shift, 0);
+    }
 
-        if (_sign)
-            return res;
-        else
+    unsigned int c = 0;
+
+    for(size_t i = 0; i < lhs.size(); ++i)
+    {
+        unsigned int a = lhs[i], b = i < shift ? 0 : i - shift < rhs.size() ? rhs[i - shift] : 0;
+
+        unsigned int tmp = (a & mask) + (b & mask) + c;
+
+        c = tmp & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
+
+        tmp &= mask;
+
+        unsigned int tmp2 = ((a >> (sizeof(unsigned int) * 4)) & mask) + ((b >> (sizeof(unsigned int) * 4)) & mask) + c;
+
+        c = tmp2 & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
+
+        tmp2 &= mask;
+
+        lhs[i] = (tmp2 << (sizeof(unsigned int) * 4)) + tmp;
+    }
+
+    if (c != 0)
+        lhs.push_back(c);
+}
+
+void big_int::minus_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs, size_t shift)
+{
+    if (lhs.size() < rhs.size() + shift)
+    {
+        lhs.resize(rhs.size() + shift, 0);
+    }
+
+    unsigned int c = 0;
+
+    for(size_t i = 0; i < lhs.size(); ++i)
+    {
+        unsigned int a = lhs[i], b = i < shift ? 0 : i - shift < rhs.size() ? rhs[i - shift] : 0;
+        b += c;
+
+        if (c != 0 && b == 0)
         {
-            return res == std::strong_ordering::equal ? res : res == std::strong_ordering::less ? std::strong_ordering::greater : std::strong_ordering::less;
+            continue;
         }
+
+        c = b > a;
+
+        lhs[i] = a - b;
     }
 }
 
-std::strong_ordering
-big_int::compare_no_sign(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs,
-                         size_t shift) noexcept
+void big_int::minus_assign_without_sign_reverse(const std::vector<unsigned int> &lhs, std::vector<unsigned int> &rhs,
+                                                size_t shift)
+{
+    if (rhs.size() < lhs.size() + shift)
+    {
+        rhs.resize(lhs.size() + shift, 0);
+    }
+
+    unsigned int c = 0;
+
+    for(size_t i = 0; i < rhs.size(); ++i)
+    {
+        unsigned int a = i < shift ? 0 : i - shift < lhs.size() ? lhs[i - shift] : 0, b = rhs[i];
+        b += c;
+
+        if (c != 0 && b == 0)
+        {
+            rhs[i] = a;
+            continue;
+        }
+
+        c = b > a;
+
+        rhs[i] = a - b;
+    }
+}
+
+bool big_int::need_karatsuba() const noexcept
+{
+    return false;
+}
+
+bool big_int::need_newton() const noexcept
+{
+    return false;
+}
+
+void big_int::mult_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    if (lhs.empty() || rhs.empty())
+    {
+        lhs.clear();
+        return;
+    }
+
+    lhs = std::move(need_karatsuba() ? mult_karatsuba(lhs, rhs) : mult_common(lhs, rhs));
+}
+
+std::vector<unsigned int> big_int::summ_four(unsigned int a0b0, unsigned int a1b0, unsigned int a0b1, unsigned int a1b1)
+{
+    std::vector<unsigned int> fi{a0b0}, se{a1b0 << (sizeof(unsigned int) * 4), a1b0 >> (sizeof(unsigned int) * 4)}, th{a0b1 << (sizeof(unsigned int) * 4), a0b1 >> (sizeof(unsigned int) * 4)},
+            fo{0, a1b1};
+
+    plus_assign_without_sign(fi, se);
+    plus_assign_without_sign(fi, th);
+    plus_assign_without_sign(fi, fo);
+
+    return fi;
+}
+
+std::vector<unsigned int>
+big_int::mult_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    std::vector<unsigned int> res;
+
+    for(size_t i = 0; i < lhs.size(); ++i)
+    {
+        for(size_t j = 0; j < rhs.size(); ++j)
+        {
+            unsigned int a0 = lhs[i] & mask, a1 = (lhs[i] >> (sizeof(unsigned int) * 4)) & mask, b0 = rhs[j] & mask, b1 = (rhs[j] >> (sizeof(unsigned int) * 4)) & mask;
+            plus_assign_without_sign(res, summ_four(a0 * b0, a1 * b0, a0 * b1, a1 * b1), i + j);
+        }
+    }
+
+    return res;
+}
+
+std::vector<unsigned int>
+big_int::mult_karatsuba(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    auto n = __crutch::next_power_2(std::max(lhs.size(), rhs.size()));
+
+    if (n == 1)
+    {
+        unsigned int a = lhs.empty() ? 0 : lhs[0], b = rhs.empty() ? 0 : rhs[0];
+        unsigned int a0 = a & mask, a1 = (a >> (sizeof(unsigned int) * 4)) & mask, b0 = b & mask, b1 = (b >> (sizeof(unsigned int) * 4)) & mask;
+        return summ_four(a0 * b0, a1 * b0, a0 * b1, a1 * b1);
+    }
+
+    std::vector<unsigned int> a0, a1, b0, b1;
+
+    a0.reserve(n/2);
+    a1.reserve(n/2);
+    b0.reserve(n/2);
+    b1.reserve(n/2);
+
+    for(size_t i = 0; i < n/2; ++i)
+    {
+        if (i < lhs.size())
+            a0.push_back(lhs[i]);
+        if (i < rhs.size())
+            b0.push_back(rhs[i]);
+    }
+    for(size_t i = n/2; i < n; ++i)
+    {
+        if (i < lhs.size())
+            a1.push_back(lhs[i]);
+        if (i < rhs.size())
+            b1.push_back(rhs[i]);
+    }
+
+    auto a0b0 = mult_karatsuba(a0, b0);
+    auto a1b1 = mult_karatsuba(a1, b1);
+    plus_assign_without_sign(a0, a1);
+    plus_assign_without_sign(b0, b1);
+    auto other = mult_karatsuba(a0, b0);
+    minus_assign_without_sign(other, a0b0);
+    minus_assign_without_sign(other, a1b1);
+
+    plus_assign_without_sign(a0b0, other, n/2);
+    plus_assign_without_sign(a0b0, a1b1, n);
+
+    return a0b0;
+}
+
+
+void big_int::divide_assign_without_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    if (rhs.empty())
+        throw std::invalid_argument("Division by zero");
+
+    if (lhs.empty() || (rhs.size() == 1 && rhs[0] == 1))
+        return;
+
+    if (lhs.size() < rhs.size())
+    {
+        lhs.clear();
+        return;
+    }
+
+    lhs = std::move(need_newton() ? div_newton(lhs, rhs) : div_common(lhs, rhs));
+}
+
+std::vector<unsigned int> big_int::div_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    std::vector<unsigned int> res;
+    std::vector<unsigned int> vec(rhs.size() - 1, 0);
+    for(size_t i = 0; i < vec.size(); ++i)
+    {
+        vec[i] = lhs[i + 1 + lhs.size() - rhs.size()];
+    }
+
+    for(long long i = lhs.size() - rhs.size(); i >= 0; --i)
+    {
+        move_caretka(vec, lhs[i]);
+        unsigned int d = find_quolitent(vec, rhs);
+        res.insert(res.begin(), d);
+        std::vector<unsigned int> tmp{d};
+        mult_assign_without_sign(tmp, rhs);
+        minus_assign_without_sign(vec, tmp);
+    }
+
+    return res;
+}
+
+
+void big_int::move_caretka(std::vector<unsigned int>& vec, unsigned int new_var)
+{
+    while (!vec.empty() && vec.back() == 0)
+    {
+        vec.pop_back();
+    }
+    vec.insert(vec.begin(), new_var);
+}
+
+unsigned int big_int::find_quolitent(const std::vector<unsigned int> &numerator, const std::vector<unsigned int> &denominator) const
+{
+    unsigned int res = 0;
+    std::vector<unsigned int> vec;
+
+    for(int i = sizeof(unsigned int) * 8 - 1; i >= 0; --i)
+    {
+        auto tmp = res;
+        res |= 1u << i;
+        vec.clear();
+        vec.push_back(res);
+
+        mult_assign_without_sign(vec, denominator);
+
+        while(!vec.empty() && vec.back() == 0)
+            vec.pop_back();
+
+        auto cmp = compare_no_sign(vec, numerator);
+
+        if (cmp == std::strong_ordering::equal)
+            return res;
+        if (cmp == std::strong_ordering::greater)
+            res = tmp;
+    }
+
+    return res;
+}
+
+std::strong_ordering big_int::compare_no_sign(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs,size_t shift) noexcept
 {
     if (lhs.size() != rhs.size() + shift)
     {
         return lhs.size() <=> (rhs.size() + shift);
-    } else if (lhs.size() == 0 && rhs.size() == 0)
+    }
+    else if (lhs.size() == 0 && rhs.size() == 0)
     {
         return std::strong_ordering::equal;
-    } else
+    }
+    else
     {
         auto lbeg = lhs.rbegin(), lend = lhs.rend(), rbeg = rhs.rbegin(), rend = rhs.rend();
 
@@ -384,14 +306,93 @@ big_int::compare_no_sign(const std::vector<unsigned int> &lhs, const std::vector
     }
 }
 
-constexpr void big_int::optimise() noexcept
+std::strong_ordering big_int::operator<=>(const big_int &other) const noexcept
 {
-    while(!_digits.empty() && _digits.back() == 0)
-        _digits.pop_back();
-
-    if (_digits.empty())
-        _sign = true;
+    return compare(other, 0);
 }
+
+std::strong_ordering big_int::compare(const big_int &other, size_t shift) const noexcept
+{
+    if (_digits.size() == 0 && other._digits.size() == 0)
+    {
+        return std::strong_ordering::equal;
+    }
+    else if (_sign != other._sign)
+    {
+        return _sign ? std::strong_ordering::greater : std::strong_ordering::less;
+    }
+    else
+    {
+        auto res = compare_no_sign(_digits, other._digits, shift);
+
+        if (_sign)
+            return res;
+        else
+        {
+            return res == std::strong_ordering::equal ? res : res == std::strong_ordering::less ? std::strong_ordering::greater : std::strong_ordering::less;
+        }
+    }
+}
+
+std::vector<unsigned int>
+big_int::div_newton(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
+{
+    std::vector<big_int> rev_a;
+    std::vector<big_int> rev_b;
+
+    rev_a.reserve(lhs.size());
+    rev_b.reserve(rhs.size());
+
+    for(auto num : std::views::reverse(lhs))
+    {
+        rev_a.emplace_back(num);
+    }
+
+    for(auto num : std::views::reverse(rhs))
+    {
+        rev_b.emplace_back(num);
+    }
+
+    auto rev_b_1 = newton_transform(rev_b);
+
+    auto rev_q = multiply_vectors(rev_a, rev_b_1);
+    modulo_vector(rev_q, lhs.size() - rhs.size() + 1);
+
+    big_int val(1);
+
+    big_int q;
+
+    for (auto& num : std::views::reverse(rev_q))//мб ui
+    {
+        q += num * val;
+        val <<= 32;
+    }
+
+    big_int a(lhs);
+    big_int b(rhs);
+
+    auto r = a - q * b;
+
+    bool sign = r._sign;
+    r._sign = true;
+
+    if (r >= b)
+    {
+        r._sign = sign;
+        q += r / b;
+        r %= b;
+    }
+
+    r._sign = sign;
+
+    if (r < 0_bi)///////////////////////////////////////////////////////////////
+    {
+        --q;
+    }
+
+    return q._digits;
+}
+
 
 constexpr big_int::big_int(const std::vector<unsigned int> &digits, bool sign) : _digits(digits), _sign(sign) {}
 
@@ -513,7 +514,7 @@ big_int big_int::operator~() const
     {
         num = ~num;
     }
-    res.optimise();
+    res.optimisation();
     return res;
 }
 
@@ -525,7 +526,7 @@ big_int &big_int::operator&=(const big_int &other)
     for(size_t i = 0; i < _digits.size(); ++i)
         _digits[i] &= i < other._digits.size() ? other._digits[i] : 0;
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -540,7 +541,7 @@ big_int &big_int::operator|=(const big_int &other)
     for(size_t i = 0; i < _digits.size(); ++i)
         _digits[i] |= other._digits[i];
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -557,7 +558,7 @@ big_int &big_int::operator^=(const big_int &other)
     for(size_t i = 0; i < _digits.size(); ++i)
         _digits[i] ^= other._digits[i];
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -589,7 +590,7 @@ constexpr big_int &big_int::operator<<=(size_t shift)
     if (c != 0)
         _digits.push_back(c);
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -624,7 +625,7 @@ constexpr big_int &big_int::operator>>=(size_t shift)
         c =  tmp << (8 * sizeof(unsigned int) - shift);
     }
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -632,7 +633,7 @@ constexpr big_int &big_int::plus_assign(const big_int &other, size_t shift)
 {
     if (_sign == other._sign)
     {
-        plus_assign_no_sign(_digits, other._digits, shift);
+        plus_assign_without_sign(_digits, other._digits, shift);
     } else
     {
         auto comp = compare_no_sign(_digits, other._digits, shift);
@@ -643,14 +644,14 @@ constexpr big_int &big_int::plus_assign(const big_int &other, size_t shift)
         } else if (comp == std::strong_ordering::less)
         {
             _sign = !_sign;
-            minus_assign_no_sign_reverse(other._digits, _digits, shift);
+            minus_assign_without_sign_reverse(other._digits, _digits, shift);
         } else
         {
-            minus_assign_no_sign(_digits, other._digits, shift);
+            minus_assign_without_sign(_digits, other._digits, shift);
         }
     }
 
-    optimise();
+    optimisation();
     return *this;
 }
 
@@ -658,7 +659,7 @@ big_int &big_int::minus_assign(const big_int &other, size_t shift)
 {
     if (_sign != other._sign)
     {
-        plus_assign_no_sign(_digits, other._digits, shift);
+        plus_assign_without_sign(_digits, other._digits, shift);
     } else
     {
         auto comp = compare_no_sign(_digits, other._digits, shift);
@@ -669,234 +670,33 @@ big_int &big_int::minus_assign(const big_int &other, size_t shift)
         } else if (comp == std::strong_ordering::less)
         {
             _sign = !_sign;
-            minus_assign_no_sign_reverse(other._digits, _digits, shift);
+            minus_assign_without_sign_reverse(other._digits, _digits, shift);
         } else
         {
-            minus_assign_no_sign(_digits, other._digits, shift);
+            minus_assign_without_sign(_digits, other._digits, shift);
         }
     }
 
-    optimise();
+    optimisation();
     return *this;
 }
 
 big_int &big_int::operator*=(const big_int &other)
 {
     _sign = _sign == other._sign;
-    multiply_assign_no_sign(_digits, other._digits);
+    mult_assign_without_sign(_digits, other._digits);
 
-    optimise();
+    optimisation();
     return *this;
 }
 
 big_int &big_int::operator/=(const big_int &other)
 {
     _sign = _sign == other._sign;
-    divide_assign_no_sign(_digits, other._digits);
+    divide_assign_without_sign(_digits, other._digits);
 
-    optimise();
+    optimisation();
     return *this;
-}
-
-constexpr void big_int::plus_assign_no_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs, size_t shift)
-{
-    if (lhs.size() < rhs.size() + shift)
-        lhs.resize(rhs.size() + shift, 0);
-
-    unsigned int c = 0;
-
-    for(size_t i = 0; i < lhs.size(); ++i)
-    {
-        unsigned int a = lhs[i], b = i < shift ? 0 : i - shift < rhs.size() ? rhs[i - shift] : 0;
-
-        unsigned int tmp = (a & mask) + (b & mask) + c;
-
-        c = tmp & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
-
-        tmp &= mask;
-
-        unsigned int tmp2 = ((a >> (sizeof(unsigned int) * 4)) & mask) + ((b >> (sizeof(unsigned int) * 4)) & mask) + c;
-
-        c = tmp2 & (1u << (sizeof(unsigned int) * 4)) ? 1 : 0;
-
-        tmp2 &= mask;
-
-        lhs[i] = (tmp2 << (sizeof(unsigned int) * 4)) + tmp;
-    }
-
-    if (c != 0)
-        lhs.push_back(c);
-}
-
-void big_int::minus_assign_no_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs, size_t shift)
-{
-    if (lhs.size() < rhs.size() + shift)
-        lhs.resize(rhs.size() + shift, 0);
-
-    unsigned int c = 0;
-
-    for(size_t i = 0; i < lhs.size(); ++i)
-    {
-        unsigned int a = lhs[i], b = i < shift ? 0 : i - shift < rhs.size() ? rhs[i - shift] : 0;
-        b += c;
-
-        if (c != 0 && b == 0)
-            continue;
-
-        c = b > a;
-
-        lhs[i] = a - b;
-    }
-}
-
-void big_int::minus_assign_no_sign_reverse(const std::vector<unsigned int> &lhs, std::vector<unsigned int> &rhs,
-                                           size_t shift)
-{
-    if (rhs.size() < lhs.size() + shift)
-        rhs.resize(lhs.size() + shift, 0);
-
-    unsigned int c = 0;
-
-    for(size_t i = 0; i < rhs.size(); ++i)
-    {
-        unsigned int a = i < shift ? 0 : i - shift < lhs.size() ? lhs[i - shift] : 0, b = rhs[i];
-        b += c;
-
-        if (c != 0 && b == 0)
-        {
-            rhs[i] = a;
-            continue;
-        }
-
-        c = b > a;
-
-        rhs[i] = a - b;
-    }
-}
-
-bool big_int::need_karatsuba() const noexcept
-{
-    return true;
-}
-
-bool big_int::need_newton() const noexcept
-{
-    return false;
-}
-
-void big_int::multiply_assign_no_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    if (lhs.empty() || rhs.empty())
-    {
-        lhs.clear();
-        return;
-    }
-
-    lhs = std::move(need_karatsuba() ? multiply_karatsuba(lhs, rhs) : multiply_common(lhs, rhs));
-}
-
-void big_int::divide_assign_no_sign(std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    if (rhs.empty())
-        throw std::invalid_argument("Division by zero");
-
-    if (lhs.empty() || (rhs.size() == 1 && rhs[0] == 1))
-        return;
-
-    if (lhs.size() < rhs.size())
-    {
-        lhs.clear();
-        return;
-    }
-
-    lhs = std::move(need_newton() ? divide_newton(lhs, rhs) : divide_common(lhs, rhs));
-}
-
-std::vector<unsigned int>
-big_int::multiply_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    std::vector<unsigned int> res;
-
-    for(size_t i = 0; i < lhs.size(); ++i)
-    {
-        for(size_t j = 0; j < rhs.size(); ++j)
-        {
-            unsigned int a0 = lhs[i] & mask, a1 = (lhs[i] >> (sizeof(unsigned int) * 4)) & mask, b0 = rhs[j] & mask, b1 = (rhs[j] >> (sizeof(unsigned int) * 4)) & mask;
-            plus_assign_no_sign(res, summ_four(a0 * b0, a1 * b0, a0 * b1, a1 * b1), i + j);
-        }
-    }
-
-    return res;
-}
-
-std::vector<unsigned int> big_int::summ_four(unsigned int a0b0, unsigned int a1b0, unsigned int a0b1, unsigned int a1b1)
-{
-    std::vector<unsigned int> fi{a0b0}, se{a1b0 << (sizeof(unsigned int) * 4), a1b0 >> (sizeof(unsigned int) * 4)}, th{a0b1 << (sizeof(unsigned int) * 4), a0b1 >> (sizeof(unsigned int) * 4)},
-            fo{0, a1b1};
-
-    plus_assign_no_sign(fi, se);
-    plus_assign_no_sign(fi, th);
-    plus_assign_no_sign(fi, fo);
-
-    return fi;
-}
-
-void big_int::move_caret(std::vector<unsigned int>& vec, unsigned int new_var)
-{
-    while (!vec.empty() && vec.back() == 0)
-        vec.pop_back();
-    vec.insert(vec.begin(), new_var);
-}
-
-unsigned int big_int::find_quolitent(const std::vector<unsigned int> &numerator, const std::vector<unsigned int> &denominator) const
-{
-    unsigned int res = 0;
-    std::vector<unsigned int> vec;
-
-    for(int i = sizeof(unsigned int) * 8 - 1; i >= 0; --i)
-    {
-        auto tmp = res;
-        res |= 1u << i;
-        vec.clear();
-        vec.push_back(res);
-
-        multiply_assign_no_sign(vec, denominator);
-
-        while(!vec.empty() && vec.back() == 0)
-            vec.pop_back();
-
-        auto comp = compare_no_sign(vec, numerator);
-
-        if (comp == std::strong_ordering::equal)
-            return res;
-        if (comp == std::strong_ordering::greater)
-            res = tmp;
-    }
-
-    return res;
-}
-
-std::vector<unsigned int>
-big_int::divide_common(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    std::vector<unsigned int> res;
-    std::vector<unsigned int> vec(rhs.size() - 1, 0);
-    for(size_t i = 0; i < vec.size(); ++i)
-    {
-        vec[i] = lhs[i + 1 + lhs.size() - rhs.size()];
-    }
-
-    for(long long i = lhs.size() - rhs.size(); i >= 0; --i)
-    {
-        move_caret(vec, lhs[i]);
-        unsigned int d = find_quolitent(vec, rhs);
-        res.insert(res.begin(), d);
-        std::vector<unsigned int> tmp{d};
-        multiply_assign_no_sign(tmp, rhs);
-        minus_assign_no_sign(vec, tmp);
-    }
-
-    return res;
 }
 
 constexpr big_int::big_int(const std::string &num, unsigned int radix) : _sign(true), _digits()
@@ -924,13 +724,13 @@ constexpr big_int::big_int(const std::string &num, unsigned int radix) : _sign(t
 
             std::vector<unsigned int> tmp{radix};
 
-            multiply_assign_no_sign(_digits, tmp);
+            mult_assign_without_sign(_digits, tmp);
 
             tmp[0] = c;
 
-            plus_assign_no_sign(_digits, tmp);
+            plus_assign_without_sign(_digits, tmp);
 
-            optimise();
+            optimisation();
         }
     }
     _sign = sign;
@@ -983,120 +783,13 @@ std::istream &operator>>(std::istream &stream, big_int &value)
     return stream;
 }
 
-std::vector<unsigned int>
-big_int::multiply_karatsuba(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    auto n = __detail::nearest_greater_power_of_2(std::max(lhs.size(), rhs.size()));
-
-    if (n == 1)
-    {
-        unsigned int a = lhs.empty() ? 0 : lhs[0], b = rhs.empty() ? 0 : rhs[0];
-        unsigned int a0 = a & mask, a1 = (a >> (sizeof(unsigned int) * 4)) & mask, b0 = b & mask, b1 = (b >> (sizeof(unsigned int) * 4)) & mask;
-        return summ_four(a0 * b0, a1 * b0, a0 * b1, a1 * b1);
-    }
-
-    std::vector<unsigned int> a0, a1, b0, b1;
-
-    a0.reserve(n/2);
-    a1.reserve(n/2);
-    b0.reserve(n/2);
-    b1.reserve(n/2);
-
-    for(size_t i = 0; i < n/2; ++i)
-    {
-        if (i < lhs.size())
-            a0.push_back(lhs[i]);
-        if (i < rhs.size())
-            b0.push_back(rhs[i]);
-    }
-    for(size_t i = n/2; i < n; ++i)
-    {
-        if (i < lhs.size())
-            a1.push_back(lhs[i]);
-        if (i < rhs.size())
-            b1.push_back(rhs[i]);
-    }
-
-    auto a0b0 = multiply_karatsuba(a0, b0);
-    auto a1b1 = multiply_karatsuba(a1, b1);
-    plus_assign_no_sign(a0, a1);
-    plus_assign_no_sign(b0, b1);
-    auto other = multiply_karatsuba(a0, b0);
-    minus_assign_no_sign(other, a0b0);
-    minus_assign_no_sign(other, a1b1);
-
-    plus_assign_no_sign(a0b0, other, n/2);
-    plus_assign_no_sign(a0b0, a1b1, n);
-
-    return a0b0;
-}
-
-std::vector<unsigned int>
-big_int::divide_newton(const std::vector<unsigned int> &lhs, const std::vector<unsigned int> &rhs) const
-{
-    std::vector<big_int> rev_a;
-    std::vector<big_int> rev_b;
-
-    rev_a.reserve(lhs.size());
-    rev_b.reserve(rhs.size());
-
-    for(auto num : std::views::reverse(lhs))
-    {
-        rev_a.emplace_back(num);
-    }
-
-    for(auto num : std::views::reverse(rhs))
-    {
-        rev_b.emplace_back(num);
-    }
-
-    auto rev_b_1 = newton_transform(rev_b);
-
-    auto rev_q = multiply_vectors(rev_a, rev_b_1);
-    modulo_vector(rev_q, lhs.size() - rhs.size() + 1);
-
-    big_int val(1);
-
-    big_int q;
-
-    for (auto& num : std::views::reverse(rev_q))
-    {
-        q += num * val;
-        val <<= 32;
-    }
-
-    big_int a(lhs);
-    big_int b(rhs);
-
-    auto r = a - q * b;
-
-    bool sign = r._sign;
-    r._sign = true;
-
-    if (r >= b)
-    {
-        r._sign = sign;
-        q += r / b;
-        r %= b;
-    }
-
-    r._sign = sign;
-
-    if (r < 0_bi)
-    {
-        --q;
-    }
-
-    return q._digits;
-}
-
 bool big_int::operator==(const big_int &other) const noexcept
 {
     if (_sign != other._sign || _digits.size() != other._digits.size())
         return false;
 
 
-    for (auto pair : std::views::zip(_digits, other._digits))
+    for (auto pair : std::ranges::views::zip(_digits, other._digits))
     {
         if (std::get<0>(pair) != std::get<1>(pair))
         {
@@ -1109,12 +802,14 @@ bool big_int::operator==(const big_int &other) const noexcept
 
 std::vector<big_int> big_int::newton_transform(const std::vector<big_int> &f)
 {
-    std::vector<big_int> g{1};
+    std::vector<big_int> g{1};///мб деление все-таки
 
     auto l = logl(f.size());
     size_t r = double((size_t)l) == l ? size_t(l) : size_t(l) + 1;
     if (r < 2)
+    {
         r = 2;
+    }
 
     for (size_t i = 1; i <= r; ++i)
     {
